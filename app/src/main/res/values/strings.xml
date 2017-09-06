@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">FChatMobile</string>
+    <string name="app_version">FChatMobile</string>
+    <string name="title_activity_chat">@string/app_name</string>
+    <string name="title_activity_login">@string/app_name</string>
+
+    <string name="message">Message</string>
+    <string name="send">Send</string>
+
+    <string name="dialog_select_character">Select Character</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="signing_in">Signing In</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+
+    <string name="fclient_started">F-Chat Client Started</string>
+    <string name="fclient_running">F-Chat Client Running</string>
+    <string name="fclient_stopped">F-Chat Client Stopped</string>
+    <string name="fclient_connected">F-Chat Client Connected</string>
+    <string name="fclient_disconnected">F-Chat Client Disconnected</string>
+
+    <string name="fclient_service_label">F-Client Service</string>
+</resources>
