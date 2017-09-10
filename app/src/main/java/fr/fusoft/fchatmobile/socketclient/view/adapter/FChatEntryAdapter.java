@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
@@ -35,6 +36,24 @@ public class FChatEntryAdapter extends ArrayAdapter<FChatEntry> {
     }
 
     int lastPosition = -1;
+
+    @Override
+    public int getCount(){
+        return this.dataSet.size();
+    }
+
+    @Override
+    public void add(FChatEntry entry){
+        this.dataSet.add(entry);
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void addAll(FChatEntry... items){
+        for(FChatEntry e : items){
+            this.add(e);
+        }
+    }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {

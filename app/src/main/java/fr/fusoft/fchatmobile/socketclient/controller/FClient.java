@@ -1,12 +1,14 @@
 package fr.fusoft.fchatmobile.socketclient.controller;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.neovisionaries.ws.client.WebSocket;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import fr.fusoft.fchatmobile.login.model.LoginTicket;
 import fr.fusoft.fchatmobile.socketclient.model.FChannel;
@@ -19,13 +21,16 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.FCommand;
 import fr.fusoft.fchatmobile.socketclient.model.commands.FLN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.FRL;
 import fr.fusoft.fchatmobile.socketclient.model.commands.HLO;
+import fr.fusoft.fchatmobile.socketclient.model.commands.ICH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.IDN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.JCH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.LCH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.MSG;
 import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.VAR;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FConnectionMessage;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FDebugMessage;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 
 /**
@@ -38,26 +43,28 @@ public class FClient {
         void onDisconnected();
         void onTextSent(String message);
         void onTextReceived(String message);
-        void onChannelUpdated(FChannel channel);
-        void onChannelJoined(FChannel channel);
-        void onChannelLeft(FChannel channel);
+        void onChannelUpdated(String channel);
+        void onChannelJoined(String channel);
+        void onChannelLeft(String channel);
+        void onChannelListReceived(List<FChannel> channels);
     }
 
-    FClientListener mListener;
-    FSocketManager socket;
-    FCommandParser parser;
+    private FClientListener mListener;
+    private FSocketManager socket;
+    private FCommandParser parser;
+    private FServer server;
+    private WebSocket webSocket;
 
-    Context context;
+    private Context context;
 
-    FServer server;
+    private LoginTicket ticket;
 
-    LoginTicket ticket;
+    private Map<String, FCharacter> characters = new HashMap<>();
+    private Map<String, FChannel> joinedChannels = new HashMap<>();
 
-    List<FChannel> joinedChannels = new ArrayList<>();
-    List<String> publicChannels = new ArrayList<>();
-    List<FCharacter> characters = new ArrayList<>();
+    private List<FChatEntry> debugMessages = new ArrayList<>();
 
-    String mainUser;
+    private String mainUser;
 
     public FClient(Context context, WebSocket socket, FClientListener listener){
         this.context = context;
@@ -73,6 +80,7 @@ public class FClient {
 
     public void start(LoginTicket ticket){
         this.ticket = ticket;
+        this.mainUser = ticket.defaultCharacter;
         this.socket.connect();
     }
 
@@ -81,34 +89,68 @@ public class FClient {
         this.socket.sendCommand(c);
     }
 
+    public void leaveChannel(String channel){
+        LCH c = new LCH(channel);
+        this.socket.sendCommand(c);
+    }
+
     private void channelJoined(JCH command){
-        String channel = command.getChannel();
+
+        FChannel channel;
 
         if(command.getCharacter().equals(mainUser)){
             //If it's the main user
-            FChannel fc = new FChannel(command.getData());
-            this.joinedChannels.add(fc);
-            this.mListener.onChannelJoined(fc);
+            channel = new FChannel(command.getChannel(), "", 0);
+            joinedChannels.put(command.getChannel(), channel);
+
+            if (this.mListener != null)
+                this.mListener.onChannelJoined(command.getChannel());
         }else{
             //If it's another user
-            FChannel c = getOpenChannel(command.getChannel());
-            c.addEntry(new FConnectionMessage(command));
+            channel = getOpenChannel(command.getChannel());
+            channel.addEntry(new FConnectionMessage(command));
+
+            if (this.mListener != null)
+                this.mListener.onChannelUpdated(command.getChannel());
         }
+
+        channel.userJoined(getCharacter(command.getCharacter()));
     }
 
     private void channelLeft(LCH command){
-        String channel = command.getChannel();
+        String c = command.getChannel();
 
         if(command.getCharacter().equals(mainUser)){
             //If it's the main user
-            FChannel fc = new FChannel(command.getData());
-            this.joinedChannels.remove(fc);
-            this.mListener.onChannelLeft(fc);
+            this.joinedChannels.remove(c);
+
+            if (this.mListener != null)
+                this.mListener.onChannelLeft(c);
         }else{
             //If it's another user
-            FChannel c = getOpenChannel(command.getChannel());
-            c.addEntry(new FConnectionMessage(command));
+            FChannel channel = getOpenChannel(c);
+            channel.addEntry(new FConnectionMessage(command));
+            channel.userLeft(command.getCharacter());
+
+            if (this.mListener != null)
+                this.mListener.onChannelUpdated(command.getChannel());
         }
+    }
+
+    private void channelData(ICH command){
+        FChannel c = getOpenChannel(command.getChannel());
+
+        List<String> users = command.getUsers();
+        Map<String, FCharacter> cUsers = new HashMap<>();
+
+        for(String user : users){
+            cUsers.put(user,this.getCharacter(user));
+        }
+
+        c.setUsers(cUsers);
+
+        if (this.mListener != null)
+            this.mListener.onChannelUpdated(command.getChannel());
     }
 
     private void messageReceived(MSG command){
@@ -117,22 +159,27 @@ public class FClient {
         getOpenChannel(command.getChannel()).addEntry(m);
     }
 
-    public FChannel getOpenChannel(String name){
-        for(FChannel c : joinedChannels){
-            if(c.getName().equals(name))
-                return c;
-        }
+    private void channelListReceived(CHA command){
+        List<FChannel> channels = FChannel.fromCHA(command);
+        Collections.sort(channels);
+        this.mListener.onChannelListReceived(channels);
+    }
 
-        return null;
+    private void characterOnline(NLN command){
+        FCharacter c = new FCharacter(command);
+        this.characters.put(c.getName(), c);
+    }
+
+    private void characterOffline(FLN command){
+        this.characters.remove(command.getCharacter());
+    }
+
+    public FChannel getOpenChannel(String name){
+        return this.joinedChannels.get(name);
     }
 
     public FCharacter getCharacter(String name){
-        for(FCharacter c : characters){
-            if(c.getName().equals(name))
-                return c;
-        }
-
-        return null;
+        return this.characters.get(name);
     }
 
     private void setupParser(){
@@ -168,9 +215,12 @@ public class FClient {
             }
 
             @Override
-            public void onChannelListReceived(CHA command) {
-
+            public void onChannelData(ICH command){
+                channelData(command);
             }
+
+            @Override
+            public void onChannelListReceived(CHA command) {channelListReceived(command); }
 
             @Override
             public void onServerVariable(VAR command) {
@@ -194,12 +244,12 @@ public class FClient {
 
             @Override
             public void onCharacterOnline(NLN command) {
-
+                characterOnline(command);
             }
 
             @Override
             public void onCharacterOffline(FLN command) {
-
+                characterOffline(command);
             }
 
             @Override
@@ -211,26 +261,37 @@ public class FClient {
     }
 
     private void setupSocket(WebSocket webSocket){
-        this.socket = new FSocketManager(this.context, webSocket, this.parser, new FSocketManager.FSocketListener() {
+        this.webSocket = webSocket;
+        this.socket = new FSocketManager(this.context, this.webSocket, this.parser, new FSocketManager.FSocketListener() {
             @Override
             public void onConnected() {
-                mListener.onConnected();
+                if(mListener != null) mListener.onConnected();
                 socket.identify(ticket);
             }
 
             public void onDisconnected() {
-                mListener.onDisconnected();
+                if(mListener != null) mListener.onDisconnected();
             }
 
             @Override
             public void onTextReceived(String message) {
-                mListener.onTextReceived(message);
+                if(mListener != null) mListener.onTextReceived(message);
+                debugMessages.add(new FDebugMessage(true, message));
             }
 
             @Override
             public void onTextSent(String message) {
-                mListener.onTextSent(message);
+                if(mListener != null) mListener.onTextSent(message);
+                debugMessages.add(new FDebugMessage(false, message));
             }
         });
+    }
+
+    public List<FChatEntry> getDebugMessages(){
+        return this.debugMessages;
+    }
+
+    public void requestChannelList(){
+        this.socket.sendCommand(new FCommand("CHA"));
     }
 }

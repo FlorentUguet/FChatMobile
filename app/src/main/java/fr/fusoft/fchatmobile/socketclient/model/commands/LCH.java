@@ -22,7 +22,18 @@ public class LCH extends FCommand {
             this.character = this.data.getString("character");
             this.channel = this.data.getString("channel");
         }catch(Exception e){
-            Log.e(LOG_TAG, "Error while loading IDN " + e.getMessage());
+            Log.e(LOG_TAG, "Error while loading LCH " + e.getMessage());
+        }
+    }
+
+    public LCH(String channel){
+        this.ID = "LCH";
+
+        try{
+            this.data = new JSONObject();
+            this.data.put("channel", channel);
+        }catch(Exception e){
+            Log.e(LOG_TAG, "Error while creating LCH Request " + e.getMessage());
         }
     }
 

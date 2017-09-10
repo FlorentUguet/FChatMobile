@@ -20,7 +20,7 @@ public class JCH extends FCommand {
         super(source);
 
         try{
-            this.character = this.data.getString("character");
+            this.character = this.data.getJSONObject("character").getString("identity");
             this.channel = this.data.getString("channel");
             this.title = this.data.getString("title");
         }catch(Exception e){

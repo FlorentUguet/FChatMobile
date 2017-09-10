@@ -3,10 +3,18 @@ package fr.fusoft.fchatmobile.socketclient.view.activity;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -19,20 +27,24 @@ import fr.fusoft.fchatmobile.socketclient.controller.FClient;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FChannel;
+import fr.fusoft.fchatmobile.socketclient.view.adapter.FChannelFragmentAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.DebugFragment;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.PublicChannelFragment;
 
 /**
  * Created by Florent on 05/09/2017.
  */
 
-public class FChatActivity extends Activity {
+public class FChatActivity extends AppCompatActivity {
     private static final int LOGIN_CODE = 256;
     private static final String LOG_TAG = "FChatActivity";
 
-    List<Fragment> fragments = new ArrayList<>();
+    List<ChannelFragment> fragments = new ArrayList<>();
     DebugFragment dbgFragment;
     FChatMobileApplication app;
+
+    FChannelFragmentAdapter adapter;
 
     FClient client;
 
@@ -40,22 +52,102 @@ public class FChatActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        this.app = (FChatMobileApplication) getApplication();
-        this.client = this.app.getClient();
 
-        if(this.client == null){
-            if(!app.isSocketConnected())
-                showLoginActivity();
-            else
-                initClient();
+        dbgFragment = new DebugFragment();
+        addFragment(dbgFragment);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_chat, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_open_channel_list:
+                openChannelList();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        dbgFragment = new DebugFragment();
-        this.fragments.add(dbgFragment);
+
+        this.app = (FChatMobileApplication) getApplication();
+        this.app.setCurrentActivity(this);
+        this.app.setListener(new FChatMobileApplication.ServiceConnectedListener() {
+            @Override
+            public void onServiceConnected() {
+                client = app.getClient();
+                initClientListener();
+                showLoginActivity();
+            }
+
+            @Override
+            public void onServiceDisconnected() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(FChatActivity.this, "Service unbound", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        if(app.isServiceBound()){
+            this.client = this.app.getClient();
+            initClientListener();
+
+            if(!app.isSocketConnected())
+                showLoginActivity();
+        }
+    }
+
+    protected void openChannelList(){
+        this.client.requestChannelList();
+    }
+
+    protected void showChannelList(final List<FChannel> channels){
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        CharSequence[] labels = new CharSequence[channels.size()];
+
+        for(int i=0;i<channels.size();i++)
+            labels[i] = channels.get(i).getName();
+
+        builder.setTitle(R.string.dialog_select_channels)
+                .setMultiChoiceItems(labels, null,
+                        new DialogInterface.OnMultiChoiceClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                                if (isChecked) {
+                                    final FChannel selected = channels.get(which);
+                                    joinChannel(selected);
+                                } else {
+                                    final FChannel unselected = channels.get(which);
+                                    leaveChannel(unselected);
+                                }
+                            }
+                        })
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                builder.show();
+            }
+        });
     }
 
     protected void showLoginActivity(){
@@ -63,8 +155,8 @@ public class FChatActivity extends Activity {
         startActivityForResult(intent,LOGIN_CODE);
     }
 
-    private void initClient(){
-        this.client = new FClient(this, app.getSocket(), new FClient.FClientListener() {
+    private void initClientListener()    {
+        this.client.setListener(new FClient.FClientListener() {
             @Override
             public void onConnected() {
                 runOnUiThread(new Runnable() {
@@ -94,39 +186,65 @@ public class FChatActivity extends Activity {
             }
 
             @Override
-            public void onChannelUpdated(FChannel channel) {
-
+            public void onChannelUpdated(String channel) {
+                channelUpdated(channel);
             }
 
             @Override
-            public void onChannelJoined(FChannel channel) {
-
+            public void onChannelJoined(String channel) {
+                channelJoined(channel);
             }
 
             @Override
-            public void onChannelLeft(FChannel channel) {
+            public void onChannelListReceived(List<FChannel> channels) {
+                showChannelList(channels);
+            }
 
+            @Override
+            public void onChannelLeft(String channel) {
+                channelLeft(channel);
             }
         });
-        Log.i(LOG_TAG, "Client initialized");
     }
 
-
     protected void loadClient(final LoginTicket ticket){
+        this.client = this.app.getClient();
 
-        if(this.client != null) {
-            Log.w(LOG_TAG, "Trying to initialize FClient while it already exists");
-        }
-        else{
-            initClient();
+        if(app.isSocketConnected()){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(FChatActivity.this, "Client already connected", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }else{
+            initClientListener();
             client.start(ticket);
         }
     }
 
-    public void channelJoined(FChannel channel){
-        ChannelFragment f = new ChannelFragment();
+    private void joinChannel(FChannel c){
+        client.joinChannel(c.getName());
+    }
+
+    private void leaveChannel(FChannel c){
+        client.leaveChannel(c.getName());
+    }
+
+    public void channelJoined(String channel){
+        Log.i(LOG_TAG, "Joined channel " + channel);
+        PublicChannelFragment f = new PublicChannelFragment();
         f.setChannel(channel);
-        this.fragments.add(f);
+
+        addFragment(f);
+    }
+
+    public void channelUpdated(String channel){
+
+    }
+
+    public void channelLeft(String channel){
+
     }
 
     public void showFragment(int i){
@@ -139,6 +257,28 @@ public class FChatActivity extends Activity {
         fragmentTransaction.replace(R.id.content, f);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
+    }
+
+    private void removeFragment(int index){
+        this.fragments.remove(index);
+        updateChannelDrawer();
+    }
+
+    private void addFragment(ChannelFragment f){
+        this.fragments.add(f);
+        updateChannelDrawer();
+    }
+
+    public void updateChannelDrawer(){
+        if(adapter == null){
+            adapter = new FChannelFragmentAdapter(new ArrayList<ChannelFragment>(), this);
+            ListView lv = (ListView) findViewById(R.id.drawerChannels);
+            lv.setAdapter(adapter);
+        }
+
+        adapter.clear();
+        adapter.addAll(this.fragments);
+        adapter.notifyDataSetChanged();
     }
 
     @Override

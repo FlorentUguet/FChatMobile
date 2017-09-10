@@ -7,6 +7,7 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.ERR;
 import fr.fusoft.fchatmobile.socketclient.model.commands.FLN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.FRL;
 import fr.fusoft.fchatmobile.socketclient.model.commands.HLO;
+import fr.fusoft.fchatmobile.socketclient.model.commands.ICH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.IDN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.JCH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.LCH;
@@ -35,6 +36,7 @@ public class FCommandParser {
         void onChannelJoined(JCH command);
         void onChannelLeft(LCH command);
         void onUnhandledCommand(FCommand command);
+        void onChannelData(ICH command);
     }
 
     FCommandParserListener listener;
@@ -87,6 +89,9 @@ public class FCommandParser {
                 break;
             case "LCH":
                 listener.onChannelLeft(new LCH(command));
+                break;
+            case "ICH:":
+                listener.onChannelData(new ICH(command));
                 break;
             default:
                 listener.onUnhandledCommand(command);

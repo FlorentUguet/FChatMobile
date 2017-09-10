@@ -1,6 +1,5 @@
 package fr.fusoft.fchatmobile.socketclient.controller;
 
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -13,7 +12,6 @@ import android.widget.Toast;
 
 import com.neovisionaries.ws.client.ThreadType;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
@@ -45,6 +43,7 @@ public class FClientService extends Service {
     private int NOTIFICATION = R.string.fclient_started;
 
     private WebSocket socket;
+    private FClient client;
 
     private static final int notificationId = 1;
 
@@ -53,7 +52,8 @@ public class FClientService extends Service {
         super.onCreate();
         Log.d(LOG_TAG,"Service Created");
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        StartSocket(SERVER_URL_DEBUG);
+        createSocket(SERVER_URL_DEBUG);
+        createClient();
 
         // Display a notification about us starting.  We put an icon in the status bar.
         showNotification(R.string.fclient_service_label, R.string.fclient_started);
@@ -63,8 +63,9 @@ public class FClientService extends Service {
     {
         return this.socket;
     }
+    public FClient getClient() { return this.client; }
 
-    public void StartSocket(String url){
+    public void createSocket(String url){
         try{
             WebSocketFactory factory = new WebSocketFactory().setConnectionTimeout(5000);
             this.socket = factory.createSocket(url);
@@ -219,6 +220,10 @@ public class FClientService extends Service {
         };
     }
 
+    private void createClient(){
+        this.client = new FClient(this, this.getSocket(), null);
+    }
+
     public void stopService(){
         Log.i(LOG_TAG,"Request for closing the service");
         stopSelf();
@@ -260,6 +265,7 @@ public class FClientService extends Service {
         if(this.mBuilder == null){
             // The PendingIntent to launch our activity if the user selects this notification
             PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, FChatActivity.class), 0);
+            PendingIntent exitIntent = PendingIntent.getBroadcast(this, 0, new Intent("android.intent.CLOSE_APPLICATION"), 0);
 
             // Set the info for the views that show in the notification panel.
             this.mBuilder = new Notification.Builder(this)
@@ -268,7 +274,8 @@ public class FClientService extends Service {
                     .setWhen(System.currentTimeMillis())  // the time stamp
                     .setContentTitle(label)  // the label of the entry
                     .setContentText(content)  // the contents of the entry
-                    .setContentIntent(contentIntent);  // The intent to send when the entry is clicked
+                    .setContentIntent(contentIntent)  // The intent to send when the entry is clicked
+                    .addAction(R.drawable.ic_notif_exit, getText(R.string.exit), exitIntent);
 
             // Send the notification.
 

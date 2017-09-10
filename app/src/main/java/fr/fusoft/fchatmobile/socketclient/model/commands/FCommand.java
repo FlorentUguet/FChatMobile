@@ -33,6 +33,11 @@ public class FCommand {
         this.data = source.data;
     }
 
+    public FCommand(String token, JSONObject data){
+        this.ID = token;
+        this.data = data;
+    }
+
     public FCommand(Tokens token, JSONObject data){
         this.ID = token.toString();
         this.data = data;

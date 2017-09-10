@@ -7,6 +7,9 @@
     <string name="message">Message</string>
     <string name="send">Send</string>
 
+    <string name="exit">Exit</string>
+
+    <string name="dialog_select_channels">Public Channels</string>
     <string name="dialog_select_character">Select Character</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
