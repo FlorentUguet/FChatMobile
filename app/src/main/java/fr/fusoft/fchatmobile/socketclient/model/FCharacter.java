@@ -15,6 +15,7 @@ public class FCharacter implements Comparable {
         ONLINE(1),
         AWAY(2),
         BUSY(3),
+        DND(3),
         UNDOCUMENTED(4);
 
         private int value;
@@ -54,7 +55,11 @@ public class FCharacter implements Comparable {
             case "looking":
                 this.status = Status.LOOKING;
                 break;
+            case "dnd":
+                this.status = Status.DND;
+                break;
             default:
+                this.status = Status.UNDOCUMENTED;
                 break;
         }
     }

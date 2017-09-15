@@ -15,6 +15,7 @@ import fr.fusoft.fchatmobile.socketclient.model.FChannel;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.FServer;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ADL;
+import fr.fusoft.fchatmobile.socketclient.model.commands.CDS;
 import fr.fusoft.fchatmobile.socketclient.model.commands.CHA;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ERR;
 import fr.fusoft.fchatmobile.socketclient.model.commands.FCommand;
@@ -47,6 +48,9 @@ public class FClient {
         void onChannelJoined(String channel);
         void onChannelLeft(String channel);
         void onChannelListReceived(List<FChannel> channels);
+
+        void onMessageReceived(String channel, FTextMessage message);
+        void onMessageSent(String channel, FTextMessage message);
     }
 
     private FClientListener mListener;
@@ -82,6 +86,17 @@ public class FClient {
         this.ticket = ticket;
         this.mainUser = ticket.defaultCharacter;
         this.socket.connect();
+    }
+
+    public void sendMessage(String message, String channel){
+        MSG command = new MSG(channel, message);
+        this.socket.sendCommand(command);
+
+        FTextMessage m = new FTextMessage(getCharacter(mainUser), command);
+        getOpenChannel(command.getChannel()).addEntry(m);
+
+        if(this.mListener != null)
+            this.mListener.onMessageSent(channel, m);
     }
 
     public void joinChannel(String channel){
@@ -153,10 +168,19 @@ public class FClient {
             this.mListener.onChannelUpdated(command.getChannel());
     }
 
+    private void channelDescription(CDS command){
+        FChannel c = getOpenChannel(command.getChannel());
+        c.setDescription(command.getDescription());
+
+    }
+
     private void messageReceived(MSG command){
         FCharacter sender = getCharacter(command.getCharacter());
         FTextMessage m = new FTextMessage(sender, command);
         getOpenChannel(command.getChannel()).addEntry(m);
+
+        if(this.mListener != null)
+            this.mListener.onMessageReceived(command.getChannel(), m);
     }
 
     private void channelListReceived(CHA command){
@@ -203,6 +227,9 @@ public class FClient {
             public void onIdentification(IDN command) {
 
             }
+
+            @Override
+            public void onChannelDescription(CDS command){channelDescription(command); }
 
             @Override
             public void onHello(HLO command) {

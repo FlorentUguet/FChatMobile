@@ -25,6 +25,7 @@ public class FChannel implements Comparable {
     private String name;
     private String mode;
     private int count;
+    private String description;
 
     List<FChatEntry> entries = new ArrayList<>();
     Map<String, FCharacter> characters = new HashMap<>();
@@ -63,6 +64,8 @@ public class FChannel implements Comparable {
 
         return channels;
     }
+
+    public void setDescription(String description){this.description = description; }
 
     public FCharacter getCharacter(String name){
         return this.characters.get(name);

@@ -1,5 +1,6 @@
 package fr.fusoft.fchatmobile.socketclient.controller;
 
+import fr.fusoft.fchatmobile.socketclient.model.commands.CDS;
 import fr.fusoft.fchatmobile.socketclient.model.commands.FCommand;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ADL;
 import fr.fusoft.fchatmobile.socketclient.model.commands.CHA;
@@ -37,6 +38,7 @@ public class FCommandParser {
         void onChannelLeft(LCH command);
         void onUnhandledCommand(FCommand command);
         void onChannelData(ICH command);
+        void onChannelDescription(CDS command);
     }
 
     FCommandParserListener listener;
@@ -92,6 +94,9 @@ public class FCommandParser {
                 break;
             case "ICH:":
                 listener.onChannelData(new ICH(command));
+                break;
+            case "CDS":
+                listener.onChannelDescription(new CDS(command));
                 break;
             default:
                 listener.onUnhandledCommand(command);

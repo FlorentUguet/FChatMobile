@@ -11,6 +11,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
+        <Button
+            android:id="@+id/buttonSend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_weight="1"
+            android:text="@string/send"/>
+
         <EditText
             android:id="@+id/messageInput"
             android:layout_width="match_parent"
@@ -18,11 +28,12 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
+            android:layout_toLeftOf="@+id/buttonSend"
+            android:layout_toStartOf="@+id/buttonSend"
             android:layout_weight="1"
             android:ems="10"
             android:hint="@string/message"
-            android:inputType="textPersonName"
-            />
+            android:inputType="textPersonName"/>
 
         <ListView
             android:id="@+id/listViewMessages"
@@ -31,16 +42,6 @@
             android:layout_above="@id/messageInput">
         </ListView>
 
-        <Button
-            android:id="@+id/buttonSend"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_below="@id/listViewMessages"
-            android:layout_weight="1"
-            android:text="@string/send"/>
 
     </RelativeLayout>
 

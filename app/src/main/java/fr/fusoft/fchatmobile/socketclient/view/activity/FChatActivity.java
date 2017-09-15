@@ -1,6 +1,5 @@
 package fr.fusoft.fchatmobile.socketclient.view.activity;
 
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
@@ -9,11 +8,11 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -27,6 +26,7 @@ import fr.fusoft.fchatmobile.socketclient.controller.FClient;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FChannel;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChannelFragmentAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.DebugFragment;
@@ -186,6 +186,16 @@ public class FChatActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onMessageSent(String channel, FTextMessage m){
+
+            }
+
+            @Override
+            public void onMessageReceived(String channel, FTextMessage m){
+
+            }
+
+            @Override
             public void onChannelUpdated(String channel) {
                 channelUpdated(channel);
             }
@@ -234,7 +244,7 @@ public class FChatActivity extends AppCompatActivity {
     public void channelJoined(String channel){
         Log.i(LOG_TAG, "Joined channel " + channel);
         PublicChannelFragment f = new PublicChannelFragment();
-        f.setChannel(channel);
+        f.setChannelName(channel);
 
         addFragment(f);
     }
@@ -274,6 +284,12 @@ public class FChatActivity extends AppCompatActivity {
             adapter = new FChannelFragmentAdapter(new ArrayList<ChannelFragment>(), this);
             ListView lv = (ListView) findViewById(R.id.drawerChannels);
             lv.setAdapter(adapter);
+            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    showFragment(fragments.get(i));
+                }
+            });
         }
 
         adapter.clear();
