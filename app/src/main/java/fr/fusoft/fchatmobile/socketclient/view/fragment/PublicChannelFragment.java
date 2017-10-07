@@ -1,7 +1,6 @@
 package fr.fusoft.fchatmobile.socketclient.view.fragment;
 
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +19,9 @@ import fr.fusoft.fchatmobile.socketclient.model.FChannel;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
-import fr.fusoft.fchatmobile.socketclient.view.adapter.FCharacterListAdapter;
+import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListAdapter;
+import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListCompactAdapter;
+import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListLargeAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
 
 /**
@@ -32,8 +33,8 @@ public class PublicChannelFragment extends ChannelFragment {
     View root;
     ListView lvUsers;
     EditText messageInput;
+    EditText usernameInput;
     Button buttonSend;
-    DrawerLayout drawer;
 
     FCharacterListAdapter userAdapter;
 
@@ -52,12 +53,21 @@ public class PublicChannelFragment extends ChannelFragment {
         this.buttonSend = (Button) this.root.findViewById(R.id.buttonSend);
         this.lvMessages = (ListView) this.root.findViewById(R.id.listViewMessages);
         this.lvUsers = (ListView) this.root.findViewById(R.id.lvDrawerUsers);
+        this.usernameInput = (EditText) this.root.findViewById(R.id.editTextFilter);
 
         this.buttonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 sendMessage(messageInput.getText().toString());
                 messageInput.setText("");
+            }
+        });
+
+        this.lvUsers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                FCharacter c = channel.getUsers().get(i);
+                openUserProfile(c);
             }
         });
 
@@ -102,13 +112,16 @@ public class PublicChannelFragment extends ChannelFragment {
 
     public void sendMessage(String message){
 
-        if(!this.channelName.equals("")){
-            FChatMobileApplication app = (FChatMobileApplication)getActivity().getApplication();
-            app.getClient().sendMessage(message, this.channelName);
+        if(this.channel != null){
+            channel.sendMessage(message);
         }else{
-            Log.e(LOG_TAG, "Trying to send a message to an empty named channel");
+            Log.e(LOG_TAG, "Trying to send a n unloaded channel");
         }
 
+    }
+
+    public void openUserProfile(FCharacter user){
+        channel.getClient().requestProfile(user.getName());
     }
 
     public void loadChannel(String channel){
@@ -218,23 +231,19 @@ public class PublicChannelFragment extends ChannelFragment {
     public void createMessageAdapter(){
         messageAdapter = new FChatEntryAdapter(new ArrayList<FChatEntry>(),getActivity());
         lvMessages.setAdapter(messageAdapter);
-        lvMessages.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d(LOG_TAG, "Clicked message " + channel.getEntries().get(i).getHeader());
-            }
-        });
     }
 
     public void createUserAdapter(){
-        userAdapter = new FCharacterListAdapter(new ArrayList<FCharacter>(),  getActivity());
+        createUserAdapter(true);
+    }
+
+    public void createUserAdapter(boolean compact){
+        if(compact){
+            userAdapter = new FCharacterListCompactAdapter(new ArrayList<FCharacter>(),  getActivity());
+        }else{
+            userAdapter = new FCharacterListLargeAdapter(new ArrayList<FCharacter>(),  getActivity());
+        }
         lvUsers.setAdapter(userAdapter);
-        lvUsers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d(LOG_TAG, "Clicked user " + channel.getUsers().get(i).getName());
-            }
-        });
     }
 
     public String getIcon(){

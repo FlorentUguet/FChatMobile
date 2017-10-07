@@ -13,6 +13,7 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.IDN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.JCH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.KID;
 import fr.fusoft.fchatmobile.socketclient.model.commands.LCH;
+import fr.fusoft.fchatmobile.socketclient.model.commands.LIS;
 import fr.fusoft.fchatmobile.socketclient.model.commands.MSG;
 import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.PRD;
@@ -43,6 +44,7 @@ public class FCommandParser {
         void onChannelDescription(CDS command);
         void onKinkData(KID command);
         void onProfileData(PRD command);
+        void onCharacterList(LIS command);
     }
 
     FCommandParserListener listener;
@@ -107,6 +109,10 @@ public class FCommandParser {
                 break;
             case "PRD":
                 listener.onProfileData(new PRD(command));
+                break;
+            case "LIS":
+                listener.onCharacterList(new LIS(command));
+                break;
             default:
                 listener.onUnhandledCommand(command);
                 break;

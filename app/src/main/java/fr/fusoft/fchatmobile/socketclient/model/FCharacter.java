@@ -5,7 +5,9 @@ import android.graphics.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
@@ -16,22 +18,26 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
 
 public class FCharacter implements Comparable {
     public enum Status{
-        LOOKING(0),
-        ONLINE(1),
-        AWAY(2),
-        BUSY(3),
-        DND(3),
-        UNDOCUMENTED(4);
+        LOOKING(0, "Looking"),
+        ONLINE(1, "Online"),
+        AWAY(2, "Away"),
+        BUSY(3, "Busy"),
+        DND(4, "Do Not Disturb"),
+        UNDOCUMENTED(4, "X");
 
+        private String label;
         private int value;
 
-        Status(int i){
+        Status(int i, String label){
             this.value = i;
+            this.label = label;
         }
 
         public int getValue(){
             return this.value;
         }
+        public String getLabel(){return this.label;}
+        public String getLetter(){return getLabel().substring(0,1);}
     }
 
     public enum Gender{
@@ -73,12 +79,13 @@ public class FCharacter implements Comparable {
         }
     }
 
-    String name;
-    Gender gender;
-    String genderString;
-    Status status;
+    private String name;
+    private Gender gender;
+    private String genderString;
+    private Status status;
+    private String statusMessage = "";
 
-    List<ProfileData> profile = new ArrayList<>();
+    Map<String, ProfileData> profile = new HashMap<String, ProfileData>();
 
     static String avatarUrl = "https://static.f-list.net/images/avatar/%s.png";
 
@@ -89,18 +96,33 @@ public class FCharacter implements Comparable {
         setStatus(token.getStatus());
     }
 
-    public List<ProfileData> getProfile(){
-        return this.profile;
+    public FCharacter(String name, String gender, String status, String message){
+        this.name = name;
+        this.genderString = gender;
+        this.gender = Gender.fromString(gender);
+        this.statusMessage = message;
+        setStatus(status);
     }
 
-    public void addProfileData(ProfileData data){
-        this.profile.add(data);
-        Collections.sort(this.profile, new Comparator<ProfileData>() {
+    public List<ProfileData> getProfile(){
+        List<ProfileData> p = new ArrayList<>(profile.values());
+        Collections.sort(p, new Comparator<ProfileData>() {
             @Override
             public int compare(ProfileData profileData, ProfileData t1) {
                 return profileData.getDataKey().compareTo(t1.getDataKey());
             }
         });
+
+        return p;
+    }
+
+    public void addProfileData(ProfileData data){
+        this.profile.put(data.getDataKey(), data);
+
+    }
+
+    public String getProfileData(String key){
+        return profile.get(key).getValue();
     }
 
     public void clearProfileData(){
@@ -129,6 +151,11 @@ public class FCharacter implements Comparable {
                 break;
         }
     }
+
+    public String getStatusMessage(){
+        return this.statusMessage;
+    }
+
 
     public String getName(){
         return this.name;

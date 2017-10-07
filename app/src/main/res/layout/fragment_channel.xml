@@ -46,13 +46,29 @@
     </RelativeLayout>
 
     <!-- The navigation drawer -->
-    <ListView android:id="@+id/lvDrawerUsers"
-              android:layout_width="240dp"
-              android:layout_height="match_parent"
-              android:layout_gravity="end"
-              android:choiceMode="singleChoice"
-              android:divider="@android:color/transparent"
-              android:dividerHeight="0dp"
-              android:background="#111"/>
+    <RelativeLayout
+                    android:orientation="vertical"
+                    android:layout_width="240dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="end">
+
+
+        <EditText
+            android:id="@+id/editTextFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:hint="Username"/>
+
+        <ListView android:id="@+id/lvDrawerUsers"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:layout_below="@id/editTextFilter"
+                  android:choiceMode="singleChoice"
+                  android:divider="@android:color/transparent"
+                  android:dividerHeight="0dp"
+                  android:background="#111"/>
+    </RelativeLayout>
 
 </android.support.v4.widget.DrawerLayout>

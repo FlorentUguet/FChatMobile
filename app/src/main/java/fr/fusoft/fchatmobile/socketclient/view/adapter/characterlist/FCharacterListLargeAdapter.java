@@ -1,12 +1,10 @@
-package fr.fusoft.fchatmobile.socketclient.view.adapter;
+package fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,19 +14,12 @@ import java.util.ArrayList;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
-import fr.fusoft.fchatmobile.socketclient.view.activity.FChatActivity;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
-import fr.fusoft.fchatmobile.utils.network.DownloadImageTask;
 
 /**
- * Created by Florent on 05/09/2017.
+ * Created by Florent on 07/10/2017.
  */
 
-public class FCharacterListAdapter extends ArrayAdapter<FCharacter> {
-
-    private ArrayList<FCharacter> dataSet;
-    Context mContext;
-
+public class FCharacterListLargeAdapter extends FCharacterListAdapter {
     // View lookup cache
     private static class ViewHolder {
         ImageView avatar;
@@ -36,31 +27,9 @@ public class FCharacterListAdapter extends ArrayAdapter<FCharacter> {
         TextView username;
     }
 
-    public FCharacterListAdapter(ArrayList<FCharacter> data, Context context) {
+    public FCharacterListLargeAdapter(ArrayList<FCharacter> data, Context context) {
         super(context, R.layout.item_user, data);
-        this.dataSet = data;
-        this.mContext=context;
     }
-
-    @Override
-    public int getCount(){
-        return this.dataSet.size();
-    }
-
-    @Override
-    public void add(FCharacter entry){
-        this.dataSet.add(entry);
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public void addAll(FCharacter... items){
-        for(FCharacter e : items){
-            this.add(e);
-        }
-    }
-
-    private int lastPosition = -1;
 
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
@@ -90,6 +59,7 @@ public class FCharacterListAdapter extends ArrayAdapter<FCharacter> {
         }
 
         viewHolder.username.setText(entry.getName());
+        viewHolder.username.setTextColor(ContextCompat.getColor(mContext, entry.getGender().getColor()));
 
         Picasso.with(mContext).load(entry.getAvatarUrl()).into(viewHolder.avatar);
 

@@ -30,6 +30,7 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.JCH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.KID;
 import fr.fusoft.fchatmobile.socketclient.model.commands.KIN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.LCH;
+import fr.fusoft.fchatmobile.socketclient.model.commands.LIS;
 import fr.fusoft.fchatmobile.socketclient.model.commands.MSG;
 import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.PRD;
@@ -133,6 +134,7 @@ public class FClient {
         if(command.getCharacter().equals(mainUser)){
             //If it's the main user
             channel = new FChannel(command.getChannel(), "", 0);
+            channel.setClient(this);
             joinedChannels.put(command.getChannel(), channel);
 
             if (this.mListener != null)
@@ -209,11 +211,21 @@ public class FClient {
 
     private void characterOnline(NLN command){
         FCharacter c = new FCharacter(command);
-        this.characters.put(c.getName(), c);
+
+        if(!this.characters.containsKey(c.getName()))
+            this.characters.put(c.getName(), c);
     }
 
     private void characterOffline(FLN command){
         this.characters.remove(command.getCharacter());
+    }
+
+    private void characterListReceived(LIS command){
+        for(FCharacter c : command.getCharacters()){
+            this.characters.put(c.getName(), c);
+        }
+
+        Log.d(LOG_TAG, this.characters.size() + " users online");
     }
 
     private void profileDataReceived(PRD command){
@@ -327,6 +339,11 @@ public class FClient {
             @Override
             public void onKinkData(KID command){
 
+            }
+
+            @Override
+            public void onCharacterList(LIS command){
+                characterListReceived(command);
             }
 
             @Override

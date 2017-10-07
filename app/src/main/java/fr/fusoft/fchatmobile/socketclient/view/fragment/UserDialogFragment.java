@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -37,6 +38,9 @@ public class UserDialogFragment extends DialogFragment {
     private TextView username;
     private Button buttonClose;
     private Button buttonDM;
+    private TextView description;
+    private TextView status;
+    private TabHost tabHost;
 
     public static UserDialogFragment newInstance(String character) {
         UserDialogFragment f = new UserDialogFragment();
@@ -70,15 +74,42 @@ public class UserDialogFragment extends DialogFragment {
         this.avatar = (ImageView) this.root.findViewById(R.id.avatar);
         this.buttonClose = (Button) this.root.findViewById(R.id.buttonClose);
         this.buttonDM = (Button) this.root.findViewById(R.id.buttonDM);
+        this.description = (TextView) this.root.findViewById(R.id.description);
+        this.status = (TextView) this.root.findViewById(R.id.textViewStatus);
+        this.tabHost = (TabHost) this.root.findViewById(R.id.tabHost);
 
+        //Tab Host
+        tabHost.setup();
+        TabHost.TabSpec tab1 = tabHost.newTabSpec("Profile");
+        TabHost.TabSpec tab2 = tabHost.newTabSpec("Status");
+
+        tab1.setIndicator("Profile");
+        tab1.setContent(this.lvProfileData.getId());
+
+        tab2.setIndicator("Status");
+        tab2.setContent(this.status.getId());
+
+        tabHost.addTab(tab1);
+        tabHost.addTab(tab2);
+
+        //Avatar
         Picasso.with(getActivity()).load(this.character.getAvatarUrl()).into(this.avatar);
 
+        //Username
         this.username.setText(this.character.getName());
         this.username.setTextColor(ContextCompat.getColor(getActivity(), this.character.getGender().getColor()));
 
+        //Description
+        this.description.setText(String.format("%s %s (%s)", this.character.getProfileData("Species"), this.character.getProfileData("Gender"), this.character.getStatus().getLabel()));
+
+        //Profile Data
         this.adapter = new FProfileDataAdapter(new ArrayList<ProfileData>(), getActivity());
         this.lvProfileData.setAdapter(adapter);
 
+        //Status
+        this.status.setText(this.character.getStatusMessage());
+
+        //Listeners
         buttonClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

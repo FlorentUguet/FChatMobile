@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import fr.fusoft.fchatmobile.socketclient.controller.FClient;
 import fr.fusoft.fchatmobile.socketclient.model.commands.CHA;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ICH;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
@@ -30,6 +31,8 @@ public class FChannel implements Comparable {
 
     List<FChatEntry> entries = new ArrayList<>();
     Map<String, FCharacter> characters = new HashMap<>();
+
+    FClient client;
 
     public interface FChannelListener{
         void onEntryListUpdated(List<FChatEntry> entries);
@@ -59,6 +62,16 @@ public class FChannel implements Comparable {
 
     public void setListener(FChannelListener listener){
         this.mListener = listener;
+    }
+
+    public void setClient(FClient c){
+        this.client = c;
+    }
+
+    public FClient getClient(){return this.client;}
+
+    public void sendMessage(String message){
+        this.client.sendMessage(message, this.getName());
     }
 
     public static List<FChannel> fromCHA(CHA command){
@@ -160,4 +173,5 @@ public class FChannel implements Comparable {
 
         return this.getName().compareTo(c.getName());
     }
+
 }
