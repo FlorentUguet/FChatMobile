@@ -10,6 +10,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 
 import fr.fusoft.fchatmobile.R;
@@ -58,7 +60,6 @@ public class FCharacterListAdapter extends ArrayAdapter<FCharacter> {
         }
     }
 
-
     private int lastPosition = -1;
 
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -68,6 +69,8 @@ public class FCharacterListAdapter extends ArrayAdapter<FCharacter> {
         ViewHolder viewHolder; // view lookup cache stored in tag
 
         final View result;
+
+        lastPosition = position;
 
         if (convertView == null) {
 
@@ -88,7 +91,7 @@ public class FCharacterListAdapter extends ArrayAdapter<FCharacter> {
 
         viewHolder.username.setText(entry.getName());
 
-        new DownloadImageTask(mContext, viewHolder.avatar).execute(entry.getAvatarUrl());
+        Picasso.with(mContext).load(entry.getAvatarUrl()).into(viewHolder.avatar);
 
         int colorStatus;
 

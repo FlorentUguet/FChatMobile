@@ -14,6 +14,7 @@ import java.util.Map;
 import fr.fusoft.fchatmobile.socketclient.model.commands.CHA;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ICH;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 
 /**
  * Created by Florent on 06/09/2017.
@@ -30,6 +31,15 @@ public class FChannel implements Comparable {
     List<FChatEntry> entries = new ArrayList<>();
     Map<String, FCharacter> characters = new HashMap<>();
 
+    public interface FChannelListener{
+        void onEntryListUpdated(List<FChatEntry> entries);
+        void onMessageAdded(FTextMessage message);
+        void onEntryAdded(FChatEntry message);
+        void onClientJoined(FCharacter character);
+        void onClientLeft(FCharacter character);
+    }
+
+    private FChannelListener mListener;
 
     public FChannel(JSONObject obj){
         try{
@@ -45,6 +55,10 @@ public class FChannel implements Comparable {
         this.name = name;
         this.mode = mode;
         this.count = count;
+    }
+
+    public void setListener(FChannelListener listener){
+        this.mListener = listener;
     }
 
     public static List<FChannel> fromCHA(CHA command){
@@ -84,11 +98,19 @@ public class FChannel implements Comparable {
     }
 
     public void userLeft(String name){
+        FCharacter c = getCharacter(name);
+
+        if(this.mListener != null)
+            this.mListener.onClientLeft(c);
+
         this.characters.remove(name);
     }
 
     public void userJoined(FCharacter c){
         this.characters.put(c.getName(), c);
+
+        if(this.mListener != null)
+            this.mListener.onClientJoined(c);
     }
 
     public void userUpdated(FCharacter c){
@@ -103,8 +125,20 @@ public class FChannel implements Comparable {
         return (getCharacter(name) != null);
     }
 
+    public void addMessage(FTextMessage message){
+        addEntry(message);
+
+        if(this.mListener != null)
+            this.mListener.onMessageAdded(message);
+    }
+
     public void addEntry(FChatEntry entry){
         this.entries.add(entry);
+
+        if(this.mListener != null){
+            this.mListener.onEntryAdded(entry);
+            this.mListener.onEntryListUpdated(this.entries);
+        }
     }
 
     public String getName(){

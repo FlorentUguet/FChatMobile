@@ -12,27 +12,26 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import fr.fusoft.fchatmobile.R;
-import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
+import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
+import fr.fusoft.fchatmobile.socketclient.model.ProfileData;
 import fr.fusoft.fchatmobile.utils.network.DownloadImageTask;
 
 /**
- * Created by Florent on 06/09/2017.
+ * Created by Florent on 07/10/2017.
  */
 
-public class FChannelFragmentAdapter extends ArrayAdapter<ChannelFragment> {
-
-    private ArrayList<ChannelFragment> dataSet;
+public class FProfileDataAdapter extends ArrayAdapter<ProfileData> {
+    private ArrayList<ProfileData> dataSet;
     Context mContext;
 
     // View lookup cache
     private static class ViewHolder {
-        ImageView icon;
-        TextView label;
+        TextView key;
+        TextView value;
     }
 
-    public FChannelFragmentAdapter(ArrayList<ChannelFragment> data, Context context) {
-        super(context, R.layout.item_channel, data);
+    public FProfileDataAdapter(ArrayList<ProfileData> data, Context context) {
+        super(context, R.layout.item_profile_data, data);
         this.dataSet = data;
         this.mContext=context;
     }
@@ -43,36 +42,37 @@ public class FChannelFragmentAdapter extends ArrayAdapter<ChannelFragment> {
     }
 
     @Override
-    public void add(ChannelFragment entry){
-        this.dataSet.add(entry);
+    public void add(ProfileData data){
+        this.dataSet.add(data);
         notifyDataSetChanged();
     }
 
     @Override
-    public void addAll(ChannelFragment... items){
-        for(ChannelFragment e : items){
+    public void addAll(ProfileData... items){
+        for(ProfileData e : items){
             this.add(e);
         }
     }
-
 
     private int lastPosition = -1;
 
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
-        ChannelFragment entry = getItem(position);
+        ProfileData entry = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         ViewHolder viewHolder; // view lookup cache stored in tag
 
         final View result;
 
+        lastPosition = position;
+
         if (convertView == null) {
 
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.item_channel, parent, false);
-            viewHolder.icon = (ImageView) convertView.findViewById(R.id.icon);
-            viewHolder.label = (TextView) convertView.findViewById(R.id.label);
+            convertView = inflater.inflate(R.layout.item_profile_data, parent, false);
+            viewHolder.key = (TextView) convertView.findViewById(R.id.textViewKey);
+            viewHolder.value = (TextView) convertView.findViewById(R.id.textViewValue);
 
             result=convertView;
 
@@ -82,18 +82,11 @@ public class FChannelFragmentAdapter extends ArrayAdapter<ChannelFragment> {
             result=convertView;
         }
 
+        viewHolder.key.setText(entry.getDataKey());
+        viewHolder.value.setText(entry.getValue());
+
         lastPosition = position;
-
-        String label = entry.getChannelName();
-        String icon = entry.getIcon();
-
-        if(icon.equals(""))
-            viewHolder.icon.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_channel_icon));
-        else
-            new DownloadImageTask(mContext, viewHolder.icon).execute(icon);
-
-        viewHolder.label.setText(label);
-        // Return the completed view to render on screen
         return convertView;
     }
+
 }

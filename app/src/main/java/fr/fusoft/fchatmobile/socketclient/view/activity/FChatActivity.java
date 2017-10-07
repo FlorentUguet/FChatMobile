@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -31,6 +32,7 @@ import fr.fusoft.fchatmobile.socketclient.view.adapter.FChannelFragmentAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.DebugFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.PublicChannelFragment;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.UserDialogFragment;
 
 /**
  * Created by Florent on 05/09/2017.
@@ -55,6 +57,30 @@ public class FChatActivity extends AppCompatActivity {
 
         dbgFragment = new DebugFragment();
         addFragment(dbgFragment);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_channels);
+        drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+                if(newState == DrawerLayout.STATE_DRAGGING)
+                    updateChannelDrawer();
+            }
+        });
     }
 
     @Override
@@ -71,9 +97,16 @@ public class FChatActivity extends AppCompatActivity {
             case R.id.action_open_channel_list:
                 openChannelList();
                 return true;
+            case R.id.action_test:
+                testFunction();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void testFunction(){
+        this.client.requestProfile(this.client.getMainUser().getName());
     }
 
     @Override
@@ -108,6 +141,8 @@ public class FChatActivity extends AppCompatActivity {
             if(!app.isSocketConnected())
                 showLoginActivity();
         }
+
+        updateChannelDrawer();
     }
 
     protected void openChannelList(){
@@ -214,6 +249,10 @@ public class FChatActivity extends AppCompatActivity {
             public void onChannelLeft(String channel) {
                 channelLeft(channel);
             }
+
+            @Override
+            public void onShowProfile(String character){ showProfile(character); }
+
         });
     }
 
@@ -233,6 +272,11 @@ public class FChatActivity extends AppCompatActivity {
         }
     }
 
+    private void showProfile(String character){
+        UserDialogFragment f = UserDialogFragment.newInstance(character);
+        f.show(getSupportFragmentManager(), "dialog");
+    }
+
     private void joinChannel(FChannel c){
         client.joinChannel(c.getName());
     }
@@ -241,11 +285,10 @@ public class FChatActivity extends AppCompatActivity {
         client.leaveChannel(c.getName());
     }
 
-    public void channelJoined(String channel){
+    public void channelJoined(final String channel){
         Log.i(LOG_TAG, "Joined channel " + channel);
         PublicChannelFragment f = new PublicChannelFragment();
         f.setChannelName(channel);
-
         addFragment(f);
     }
 
@@ -254,7 +297,7 @@ public class FChatActivity extends AppCompatActivity {
     }
 
     public void channelLeft(String channel){
-
+        updateChannelDrawer();
     }
 
     public void showFragment(int i){
@@ -280,21 +323,28 @@ public class FChatActivity extends AppCompatActivity {
     }
 
     public void updateChannelDrawer(){
-        if(adapter == null){
-            adapter = new FChannelFragmentAdapter(new ArrayList<ChannelFragment>(), this);
-            ListView lv = (ListView) findViewById(R.id.drawerChannels);
-            lv.setAdapter(adapter);
-            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    showFragment(fragments.get(i));
-                }
-            });
-        }
 
-        adapter.clear();
-        adapter.addAll(this.fragments);
-        adapter.notifyDataSetChanged();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(adapter == null){
+                    adapter = new FChannelFragmentAdapter(new ArrayList<ChannelFragment>(), FChatActivity.this);
+                    ListView lv = (ListView) findViewById(R.id.lvDrawerChannels);
+                    lv.setAdapter(adapter);
+                    lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                            showFragment(fragments.get(i));
+                        }
+                    });
+                }
+
+                adapter.clear();
+                adapter.addAll(FChatActivity.this.fragments);
+                adapter.notifyDataSetChanged();
+            }
+        });
+
     }
 
     @Override

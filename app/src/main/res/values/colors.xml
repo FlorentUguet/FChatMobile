@@ -11,4 +11,14 @@
     <color name="colorLooking">#64DD17</color>
     <color name="colorBusy">#D50000</color>
     <color name="colorUndefined">#000000</color>
+
+    <color name="colorMale">#3F51B5</color>
+    <color name="colorFemale">#E91E63</color>
+    <color name="colorHerm">#4A148C</color>
+    <color name="colorTransgender">#FF9800</color>
+    <color name="colorShemale">#8E24AA</color>
+    <color name="colorMaleHerm">#1A237E</color>
+    <color name="colorCuntBoy">#2E7D32</color>
+    <color name="colorNone">#FFEB3B</color>
+    <color name="colorInvalidGender">#795548</color>
 </resources>

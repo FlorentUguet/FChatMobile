@@ -1,21 +1,25 @@
 package fr.fusoft.fchatmobile.socketclient.view.fragment;
 
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import fr.fusoft.fchatmobile.FChatMobileApplication;
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FChannel;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FCharacterListAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
 
@@ -29,11 +33,11 @@ public class PublicChannelFragment extends ChannelFragment {
     ListView lvUsers;
     EditText messageInput;
     Button buttonSend;
+    DrawerLayout drawer;
 
     FCharacterListAdapter userAdapter;
 
     FChannel channel;
-    String channelName = "";
 
     @Override
     public void onCreate(Bundle savedInstanceBundle){
@@ -47,7 +51,7 @@ public class PublicChannelFragment extends ChannelFragment {
         this.messageInput = (EditText) this.root.findViewById(R.id.messageInput);
         this.buttonSend = (Button) this.root.findViewById(R.id.buttonSend);
         this.lvMessages = (ListView) this.root.findViewById(R.id.listViewMessages);
-        this.lvUsers = (ListView) this.root.findViewById(R.id.drawerUsers);
+        this.lvUsers = (ListView) this.root.findViewById(R.id.lvDrawerUsers);
 
         this.buttonSend.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,16 +101,27 @@ public class PublicChannelFragment extends ChannelFragment {
     }
 
     public void sendMessage(String message){
-        FChatMobileApplication app = (FChatMobileApplication)getActivity().getApplication();
-        app.getClient().sendMessage(message, this.channelName);
+
+        if(!this.channelName.equals("")){
+            FChatMobileApplication app = (FChatMobileApplication)getActivity().getApplication();
+            app.getClient().sendMessage(message, this.channelName);
+        }else{
+            Log.e(LOG_TAG, "Trying to send a message to an empty named channel");
+        }
+
     }
 
     public void loadChannel(String channel){
         FChatMobileApplication app = (FChatMobileApplication)getActivity().getApplication();
-        FChannel c = app.getClient().getOpenChannel(channel);
+        final FChannel c = app.getClient().getOpenChannel(channel);
 
         if(c != null) {
-            loadChannel(c);
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {loadChannel(c);
+                }
+            });
+
         }else{
             Log.w(LOG_TAG, "Channel " + channel + " was not found in the FClient");
         }
@@ -114,21 +129,112 @@ public class PublicChannelFragment extends ChannelFragment {
 
     public void loadChannel(FChannel channel){
         this.channel = channel;
-        this.messageAdapter = new FChatEntryAdapter(new ArrayList<FChatEntry>(),getActivity());
-        this.lvMessages.setAdapter(messageAdapter);
 
-        this.messageAdapter.clear();
-        this.messageAdapter.addAll(this.channel.getEntries());
-        this.messageAdapter.notifyDataSetChanged();
+        updateMessages();
+        updateUsers();
 
-        this.userAdapter = new FCharacterListAdapter(new ArrayList<FCharacter>(), getActivity());
-        this.lvUsers.setAdapter(messageAdapter);
+        this.channel.setListener(new FChannel.FChannelListener() {
+            @Override
+            public void onEntryListUpdated(List<FChatEntry> entries) {
 
-        this.userAdapter.clear();
-        this.userAdapter.addAll(this.channel.getUsers());
-        this.userAdapter.notifyDataSetChanged();
+            }
 
-        Log.d(LOG_TAG, "Channel " + channel + " was set in fragment " + this.getTag());
+            @Override
+            public void onMessageAdded(FTextMessage message) {
+
+            }
+
+            @Override
+            public void onEntryAdded(FChatEntry message) {
+                addEntry(message);
+            }
+
+            @Override
+            public void onClientJoined(FCharacter character) {
+                updateUsers();
+            }
+
+            @Override
+            public void onClientLeft(FCharacter character) {
+                updateUsers();
+            }
+        });
+
+
+        Log.d(LOG_TAG, "Channel " + channel + " has " + this.channel.getUsers().size() + " users and " +  this.channel.getEntries().size() + " messages");
+    }
+
+    public void addEntry(final FChatEntry entry){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(messageAdapter == null){updateMessages();}
+                else{
+                    messageAdapter.add(entry);
+                    messageAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    public void updateMessages(){
+        updateMessages(channel.getEntries());
+    }
+
+    public void updateMessages(final List<FChatEntry> entries){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(messageAdapter == null){
+                    createMessageAdapter();
+                }
+
+                messageAdapter.clear();
+                messageAdapter.addAll(entries);
+                messageAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    public void updateUsers() {
+        updateUsers(channel.getUsers());
+    }
+
+    public void updateUsers(final List<FCharacter> users){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(userAdapter == null){
+                    createUserAdapter();
+                }
+
+                userAdapter.clear();
+                userAdapter.addAll(users);
+                userAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    public void createMessageAdapter(){
+        messageAdapter = new FChatEntryAdapter(new ArrayList<FChatEntry>(),getActivity());
+        lvMessages.setAdapter(messageAdapter);
+        lvMessages.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d(LOG_TAG, "Clicked message " + channel.getEntries().get(i).getHeader());
+            }
+        });
+    }
+
+    public void createUserAdapter(){
+        userAdapter = new FCharacterListAdapter(new ArrayList<FCharacter>(),  getActivity());
+        lvUsers.setAdapter(userAdapter);
+        lvUsers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d(LOG_TAG, "Clicked user " + channel.getUsers().get(i).getName());
+            }
+        });
     }
 
     public String getIcon(){

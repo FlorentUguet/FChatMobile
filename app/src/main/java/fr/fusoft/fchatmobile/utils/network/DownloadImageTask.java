@@ -35,7 +35,7 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         String filename = url.substring(url.lastIndexOf("/") + 1, url.length());
         File file = new File(context.getCacheDir(), filename);
 
-        if(!file.exists()){
+        if(true){
             try{
                 boolean ok = file.createNewFile();
                 OutputStream out = new FileOutputStream(file);

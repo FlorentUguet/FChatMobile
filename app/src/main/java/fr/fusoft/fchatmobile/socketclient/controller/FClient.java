@@ -1,6 +1,7 @@
 package fr.fusoft.fchatmobile.socketclient.controller;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.neovisionaries.ws.client.WebSocket;
 
@@ -14,6 +15,7 @@ import fr.fusoft.fchatmobile.login.model.LoginTicket;
 import fr.fusoft.fchatmobile.socketclient.model.FChannel;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.FServer;
+import fr.fusoft.fchatmobile.socketclient.model.ProfileData;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ADL;
 import fr.fusoft.fchatmobile.socketclient.model.commands.CDS;
 import fr.fusoft.fchatmobile.socketclient.model.commands.CHA;
@@ -25,9 +27,13 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.HLO;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ICH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.IDN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.JCH;
+import fr.fusoft.fchatmobile.socketclient.model.commands.KID;
+import fr.fusoft.fchatmobile.socketclient.model.commands.KIN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.LCH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.MSG;
 import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
+import fr.fusoft.fchatmobile.socketclient.model.commands.PRD;
+import fr.fusoft.fchatmobile.socketclient.model.commands.PRO;
 import fr.fusoft.fchatmobile.socketclient.model.commands.VAR;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FConnectionMessage;
@@ -51,6 +57,8 @@ public class FClient {
 
         void onMessageReceived(String channel, FTextMessage message);
         void onMessageSent(String channel, FTextMessage message);
+
+        void onShowProfile(String character);
     }
 
     private FClientListener mListener;
@@ -69,6 +77,8 @@ public class FClient {
     private List<FChatEntry> debugMessages = new ArrayList<>();
 
     private String mainUser;
+
+    private final String LOG_TAG = "FClient";
 
     public FClient(Context context, WebSocket socket, FClientListener listener){
         this.context = context;
@@ -93,10 +103,18 @@ public class FClient {
         this.socket.sendCommand(command);
 
         FTextMessage m = new FTextMessage(getCharacter(mainUser), command);
-        getOpenChannel(command.getChannel()).addEntry(m);
+        getOpenChannel(command.getChannel()).addMessage(m);
 
         if(this.mListener != null)
             this.mListener.onMessageSent(channel, m);
+    }
+
+    public void requestKinks(String character){
+        socket.sendCommand(new KIN(character));
+    }
+
+    public void requestProfile(String character){
+        socket.sendCommand(new PRO(character));
     }
 
     public void joinChannel(String channel){
@@ -110,7 +128,6 @@ public class FClient {
     }
 
     private void channelJoined(JCH command){
-
         FChannel channel;
 
         if(command.getCharacter().equals(mainUser)){
@@ -123,10 +140,6 @@ public class FClient {
         }else{
             //If it's another user
             channel = getOpenChannel(command.getChannel());
-            channel.addEntry(new FConnectionMessage(command));
-
-            if (this.mListener != null)
-                this.mListener.onChannelUpdated(command.getChannel());
         }
 
         channel.userJoined(getCharacter(command.getCharacter()));
@@ -144,7 +157,6 @@ public class FClient {
         }else{
             //If it's another user
             FChannel channel = getOpenChannel(c);
-            channel.addEntry(new FConnectionMessage(command));
             channel.userLeft(command.getCharacter());
 
             if (this.mListener != null)
@@ -177,10 +189,16 @@ public class FClient {
     private void messageReceived(MSG command){
         FCharacter sender = getCharacter(command.getCharacter());
         FTextMessage m = new FTextMessage(sender, command);
-        getOpenChannel(command.getChannel()).addEntry(m);
 
-        if(this.mListener != null)
-            this.mListener.onMessageReceived(command.getChannel(), m);
+        FChannel c = getOpenChannel(command.getChannel());
+
+        if(c != null){
+            c.addMessage(m);
+            if(this.mListener != null)
+                this.mListener.onMessageReceived(command.getChannel(), m);
+        }else{
+            Log.w(LOG_TAG, "Received message for channel " + command.getChannel() + " but channel is not opened");
+        }
     }
 
     private void channelListReceived(CHA command){
@@ -196,6 +214,28 @@ public class FClient {
 
     private void characterOffline(FLN command){
         this.characters.remove(command.getCharacter());
+    }
+
+    private void profileDataReceived(PRD command){
+        ProfileData d = command.getProfile();
+        FCharacter c = getCharacter(d.getCharacter());
+
+        switch(d.getType()){
+            case INFO:
+                c.addProfileData(d);
+                break;
+            case START:
+                c.clearProfileData();
+                break;
+            case END:
+                if(this.mListener != null)
+                    this.mListener.onShowProfile(d.getCharacter());
+                break;
+        }
+    }
+
+    public FCharacter getMainUser(){
+        return this.getCharacter(mainUser);
     }
 
     public FChannel getOpenChannel(String name){
@@ -282,6 +322,16 @@ public class FClient {
             @Override
             public void onMessage(MSG command) {
                 messageReceived(command);
+            }
+
+            @Override
+            public void onKinkData(KID command){
+
+            }
+
+            @Override
+            public void onProfileData(PRD command){
+                profileDataReceived(command);
             }
         });
 

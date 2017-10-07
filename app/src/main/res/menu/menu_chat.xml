@@ -6,4 +6,10 @@
         android:icon="@drawable/ic_open_channel_list"
         android:title="Channels"
         app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_test"
+        android:icon="@drawable/ic_open_channel_list"
+        android:title="Test"
+        app:showAsAction="always"/>
 </menu>

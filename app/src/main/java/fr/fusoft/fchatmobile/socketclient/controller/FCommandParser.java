@@ -11,9 +11,11 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.HLO;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ICH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.IDN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.JCH;
+import fr.fusoft.fchatmobile.socketclient.model.commands.KID;
 import fr.fusoft.fchatmobile.socketclient.model.commands.LCH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.MSG;
 import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
+import fr.fusoft.fchatmobile.socketclient.model.commands.PRD;
 import fr.fusoft.fchatmobile.socketclient.model.commands.VAR;
 
 /**
@@ -39,6 +41,8 @@ public class FCommandParser {
         void onUnhandledCommand(FCommand command);
         void onChannelData(ICH command);
         void onChannelDescription(CDS command);
+        void onKinkData(KID command);
+        void onProfileData(PRD command);
     }
 
     FCommandParserListener listener;
@@ -98,6 +102,11 @@ public class FCommandParser {
             case "CDS":
                 listener.onChannelDescription(new CDS(command));
                 break;
+            case "KID":
+                listener.onKinkData(new KID(command));
+                break;
+            case "PRD":
+                listener.onProfileData(new PRD(command));
             default:
                 listener.onUnhandledCommand(command);
                 break;
