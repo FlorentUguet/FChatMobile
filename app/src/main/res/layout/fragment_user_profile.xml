@@ -53,12 +53,31 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:text="@string/close"/>
+
     <Button
-        android:id="@+id/buttonDM"
+        android:id="@+id/buttonBookmark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@id/buttonClose"
         android:layout_toStartOf="@id/buttonClose"
+        android:layout_alignParentBottom="true"
+        android:text="@string/add_bookmark"/>
+
+    <Button
+        android:id="@+id/buttonFriend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/buttonBookmark"
+        android:layout_toStartOf="@id/buttonBookmark"
+        android:layout_alignParentBottom="true"
+        android:text="@string/add_friend"/>
+
+    <Button
+        android:id="@+id/buttonDM"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/buttonFriend"
+        android:layout_toStartOf="@id/buttonFriend"
         android:layout_alignParentBottom="true"
         android:text="@string/open_dm"/>
 
@@ -99,9 +118,4 @@
             </FrameLayout>
         </LinearLayout>
     </TabHost>
-
-
-
-
-
 </RelativeLayout>

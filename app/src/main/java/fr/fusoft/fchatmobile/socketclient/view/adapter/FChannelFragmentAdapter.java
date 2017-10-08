@@ -9,6 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 
 import fr.fusoft.fchatmobile.R;
@@ -90,7 +92,7 @@ public class FChannelFragmentAdapter extends ArrayAdapter<ChannelFragment> {
         if(icon.equals(""))
             viewHolder.icon.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_channel_icon));
         else
-            new DownloadImageTask(mContext, viewHolder.icon).execute(icon);
+            Picasso.with(mContext).load(icon).into(viewHolder.icon);
 
         viewHolder.label.setText(label);
         // Return the completed view to render on screen

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
@@ -24,7 +25,7 @@ public class FCharacterListCompactAdapter extends FCharacterListAdapter {
         TextView username;
     }
 
-    public FCharacterListCompactAdapter(ArrayList<FCharacter> data, Context context) {
+    public FCharacterListCompactAdapter(List<FCharacter> data, Context context) {
         super(context, R.layout.item_user_compact, data);
     }
 

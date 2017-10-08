@@ -30,7 +30,7 @@ public class FChannel implements Comparable {
     private String description;
 
     List<FChatEntry> entries = new ArrayList<>();
-    Map<String, FCharacter> characters = new HashMap<>();
+    List<String> characters = new ArrayList<>();
 
     FClient client;
 
@@ -38,8 +38,7 @@ public class FChannel implements Comparable {
         void onEntryListUpdated(List<FChatEntry> entries);
         void onMessageAdded(FTextMessage message);
         void onEntryAdded(FChatEntry message);
-        void onClientJoined(FCharacter character);
-        void onClientLeft(FCharacter character);
+        void onUserListUpdated(List<FCharacter> users);
     }
 
     private FChannelListener mListener;
@@ -95,7 +94,10 @@ public class FChannel implements Comparable {
     public void setDescription(String description){this.description = description; }
 
     public FCharacter getCharacter(String name){
-        return this.characters.get(name);
+        if(this.characters.contains(name))
+            return this.client.getCharacter(name);
+        else
+            return null;
     }
 
     public void setMode(String mode){
@@ -106,36 +108,32 @@ public class FChannel implements Comparable {
         this.name = name;
     }
 
-    public void setUsers(Map<String, FCharacter> characters){
+    public void setUsers(List<String> characters){
         this.characters = characters;
+        userListUpdated();
     }
 
     public void userLeft(String name){
-        FCharacter c = getCharacter(name);
-
-        if(this.mListener != null)
-            this.mListener.onClientLeft(c);
-
         this.characters.remove(name);
+        userListUpdated();
     }
 
-    public void userJoined(FCharacter c){
-        this.characters.put(c.getName(), c);
+    public void userJoined(String c){
+        this.characters.add(c);
+        userListUpdated();
+    }
 
+    public void userListUpdated(){
         if(this.mListener != null)
-            this.mListener.onClientJoined(c);
-    }
-
-    public void userUpdated(FCharacter c){
-        this.characters.put(c.getName(), c);
+            this.mListener.onUserListUpdated(getUsers());
     }
 
     public String toString(){
         return this.name;
     }
 
-    boolean hasCharacter(String name){
-        return (getCharacter(name) != null);
+    public boolean hasCharacter(String name){
+        return this.characters.contains(name);
     }
 
     public void addMessage(FTextMessage message){
@@ -163,9 +161,15 @@ public class FChannel implements Comparable {
     }
 
     public List<FCharacter> getUsers(){
-        List<FCharacter> c = new ArrayList<FCharacter>(this.characters.values());
-        Collections.sort(c);
-        return c;
+        List<FCharacter> filtered = new ArrayList<>();
+
+        for(String c : this.characters){
+            if(this.client.getCharacter(c) != null)
+                filtered.add(this.client.getCharacter(c));
+        }
+
+        Collections.sort(filtered);
+        return filtered;
     }
 
     public int compareTo(Object other){

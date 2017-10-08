@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import fr.fusoft.fchatmobile.login.model.LoginParams;
 import fr.fusoft.fchatmobile.login.model.LoginTicket;
+import fr.fusoft.fchatmobile.socketclient.controller.FListApi;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -41,30 +42,11 @@ public class LoginClient {
 
     public LoginTicket Login(LoginParams p){
 
-        OkHttpClient client = new OkHttpClient();
-        RequestBody formBody = new FormBody.Builder()
-                .add("secure", "yes")
-                .add("account", p.User)
-                .add("password", p.Pass)
-                .build();
+        JSONObject o = FListApi.login(p.User, p.Pass);
 
-        Request r = new Request.Builder()
-                .url(LOGIN_URL)
-                .post(formBody)
-                .build();
-
-        try {
-            Response response = client.newCall(r).execute();
-
-            if (!response.isSuccessful())
-                throw new IOException("Unexpected code " + response);
-
-            JSONObject o = new JSONObject(response.body().string());
+        if(o != null)
             return new LoginTicket(p.User, o);
-
-        }catch(Exception e){
-            Log.e(LOG_TAG, e.getMessage());
+        else
             return null;
-        }
     }
 }

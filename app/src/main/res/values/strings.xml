@@ -20,6 +20,12 @@
     <string name="open_dm">Open DM</string>
     <string name="close">Close</string>
 
+    <string name="add_bookmark">Bookmark</string>
+    <string name="remove_bookmark">Remove Bookmark</string>
+
+    <string name="add_friend">Add Friend</string>
+    <string name="remove_friend">Remove Friend</string>
+
     <string name="fclient_started">F-Chat Client Started</string>
     <string name="fclient_running">F-Chat Client Running</string>
     <string name="fclient_stopped">F-Chat Client Stopped</string>

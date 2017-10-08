@@ -116,10 +116,10 @@ public class LoginFragment extends Fragment {
     public void onCharacterSelected(DialogInterface dialog, int id){
         this.loginTicket.selectedCharacter = this.loginTicket.characters.get(id);
         dialog.dismiss();
-        LoginFinished();
+        loginFinished();
     }
 
-    public void LoginFinished(){
+    public void loginFinished(){
         Intent intent = new Intent();
         intent.putExtra("ticket", loginTicket);
         getActivity().setResult(RESULT_OK, intent);

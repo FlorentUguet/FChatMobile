@@ -29,14 +29,14 @@ import fr.fusoft.fchatmobile.utils.network.DownloadImageTask;
 
 public class FCharacterListAdapter extends ArrayAdapter<FCharacter>{
 
-    protected ArrayList<FCharacter> dataSet;
+    protected List<FCharacter> dataSet;
     protected Context mContext;
 
     // View lookup cache
     private static class ViewHolder {
     }
 
-    public FCharacterListAdapter(Context context, int resource, ArrayList<FCharacter> objects) {
+    public FCharacterListAdapter(Context context, int resource, List<FCharacter> objects) {
         super(context, resource, objects);
         this.dataSet = objects;
         this.mContext = context;

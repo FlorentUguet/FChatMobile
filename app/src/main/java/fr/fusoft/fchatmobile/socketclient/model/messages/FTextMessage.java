@@ -12,10 +12,10 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.MSG;
 public class FTextMessage extends FChatEntry {
 
     FCharacter sender;
-    MSG token;
+    String message;
 
-    public FTextMessage(FCharacter sender, MSG token){
-        this.token = token;
+    public FTextMessage(FCharacter sender, String message){
+        this.message = message;
         this.sender = sender;
         this.timestamp = new Date();
     }
@@ -25,6 +25,6 @@ public class FTextMessage extends FChatEntry {
     }
 
     public String getContent(){
-        return this.token.getMessage();
+        return this.message;
     }
 }

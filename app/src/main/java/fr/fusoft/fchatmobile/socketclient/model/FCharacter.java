@@ -1,16 +1,23 @@
 package fr.fusoft.fchatmobile.socketclient.model;
 
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import fr.fusoft.fchatmobile.R;
+import fr.fusoft.fchatmobile.socketclient.controller.FClient;
 import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 
 /**
  * Created by Florent on 05/09/2017.
@@ -85,6 +92,17 @@ public class FCharacter implements Comparable {
     private Status status;
     private String statusMessage = "";
 
+    private FClient client;
+
+    private List<FChatEntry> privateMessages = new ArrayList<>();
+
+    public interface FCharacterListener{
+        void onPrivateMessage(FChatEntry message);
+        void onPrivateMessageListUpdated(List<FChatEntry> messages);
+    }
+
+    private FCharacterListener mListener;
+
     Map<String, ProfileData> profile = new HashMap<String, ProfileData>();
 
     static String avatarUrl = "https://static.f-list.net/images/avatar/%s.png";
@@ -102,6 +120,31 @@ public class FCharacter implements Comparable {
         this.gender = Gender.fromString(gender);
         this.statusMessage = message;
         setStatus(status);
+    }
+
+    public void setClient(FClient client){
+        this.client = client;
+    }
+
+    public void setListener(FCharacterListener listener){
+        this.mListener = listener;
+    }
+
+    public void sendMessage(String message){
+        this.client.sendPrivateMessage(this.name, message);
+        addMessage(new FTextMessage(this.client.getMainUser(), message));
+    }
+
+    public void messageReceived(FChatEntry message){
+        addMessage(message);
+    }
+
+    private void addMessage(FChatEntry message){
+        this.privateMessages.add(message);
+        if(this.mListener != null){
+            this.mListener.onPrivateMessage(message);
+            this.mListener.onPrivateMessageListUpdated(this.privateMessages);
+        }
     }
 
     public List<ProfileData> getProfile(){
@@ -122,14 +165,17 @@ public class FCharacter implements Comparable {
     }
 
     public String getProfileData(String key){
-        return profile.get(key).getValue();
+        if(profile.containsKey(key))
+            return profile.get(key).getValue();
+        else
+            return "";
     }
 
     public void clearProfileData(){
         this.profile.clear();
     }
 
-    private void setStatus(String status){
+    public void setStatus(String status){
         switch(status){
             case "online":
                 this.status = Status.ONLINE;
@@ -152,10 +198,13 @@ public class FCharacter implements Comparable {
         }
     }
 
+    public void setStatusMessage(String message){
+        this.statusMessage = message;
+    }
+
     public String getStatusMessage(){
         return this.statusMessage;
     }
-
 
     public String getName(){
         return this.name;

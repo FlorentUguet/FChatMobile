@@ -41,6 +41,8 @@ public class UserDialogFragment extends DialogFragment {
     private TextView description;
     private TextView status;
     private TabHost tabHost;
+    private Button buttonFriend;
+    private Button buttonBookmark;
 
     public static UserDialogFragment newInstance(String character) {
         UserDialogFragment f = new UserDialogFragment();
@@ -74,6 +76,8 @@ public class UserDialogFragment extends DialogFragment {
         this.avatar = (ImageView) this.root.findViewById(R.id.avatar);
         this.buttonClose = (Button) this.root.findViewById(R.id.buttonClose);
         this.buttonDM = (Button) this.root.findViewById(R.id.buttonDM);
+        this.buttonFriend = (Button) this.root.findViewById(R.id.buttonFriend);
+        this.buttonBookmark = (Button) this.root.findViewById(R.id.buttonBookmark);
         this.description = (TextView) this.root.findViewById(R.id.description);
         this.status = (TextView) this.root.findViewById(R.id.textViewStatus);
         this.tabHost = (TabHost) this.root.findViewById(R.id.tabHost);
@@ -123,6 +127,20 @@ public class UserDialogFragment extends DialogFragment {
             public void onClick(View view) {
                 if(mListener != null)
                     mListener.onDM(characterName);
+            }
+        });
+
+        buttonBookmark.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        buttonFriend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
             }
         });
 

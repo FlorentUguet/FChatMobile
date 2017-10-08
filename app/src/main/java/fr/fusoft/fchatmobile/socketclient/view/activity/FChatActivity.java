@@ -31,6 +31,8 @@ import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChannelFragmentAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.DebugFragment;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.FriendsListDialogFragment;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.PrivateMessageFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.PublicChannelFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.UserDialogFragment;
 
@@ -100,6 +102,9 @@ public class FChatActivity extends AppCompatActivity {
             case R.id.action_test:
                 testFunction();
                 return true;
+            case R.id.action_friends:
+                showFriendsList();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -137,9 +142,6 @@ public class FChatActivity extends AppCompatActivity {
         if(app.isServiceBound()){
             this.client = this.app.getClient();
             initClientListener();
-
-            if(!app.isSocketConnected())
-                showLoginActivity();
         }
 
         updateChannelDrawer();
@@ -185,6 +187,11 @@ public class FChatActivity extends AppCompatActivity {
         });
     }
 
+    protected void showFriendsList(){
+        FriendsListDialogFragment f = FriendsListDialogFragment.newInstance();
+        f.show(getSupportFragmentManager(), "dialog");
+    }
+
     protected void showLoginActivity(){
         Intent intent = new Intent(this, LoginActivity.class);
         startActivityForResult(intent,LOGIN_CODE);
@@ -221,16 +228,6 @@ public class FChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onMessageSent(String channel, FTextMessage m){
-
-            }
-
-            @Override
-            public void onMessageReceived(String channel, FTextMessage m){
-
-            }
-
-            @Override
             public void onChannelUpdated(String channel) {
                 channelUpdated(channel);
             }
@@ -253,6 +250,8 @@ public class FChatActivity extends AppCompatActivity {
             @Override
             public void onShowProfile(String character){ showProfile(character); }
 
+            @Override
+            public void onPrivateMessageReceived(String character){ privateMessageReceived(character); }
         });
     }
 
@@ -275,6 +274,12 @@ public class FChatActivity extends AppCompatActivity {
     private void showProfile(String character){
         UserDialogFragment f = UserDialogFragment.newInstance(character);
         f.show(getSupportFragmentManager(), "dialog");
+    }
+
+    private void privateMessageReceived(String character){
+        PrivateMessageFragment f = new PrivateMessageFragment();
+        f.setChannelName(character);
+        addFragment(f);
     }
 
     private void joinChannel(FChannel c){

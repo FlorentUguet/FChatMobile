@@ -2,7 +2,10 @@ package fr.fusoft.fchatmobile.socketclient.view.fragment;
 
 import android.os.Bundle;
 import android.app.Fragment;
+import android.view.View;
 import android.widget.ListView;
+
+import java.util.List;
 
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
@@ -14,7 +17,7 @@ import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
 public class ChannelFragment extends Fragment{
     private final static String LOG_TAG = "ChannelFragment";
 
-    private enum ChannelType{
+    protected enum ChannelType{
         DEBUG(0),
         CONSOLE(1),
         PUBLIC(2),
@@ -36,6 +39,8 @@ public class ChannelFragment extends Fragment{
     protected ChannelType type = ChannelType.DEBUG;
     protected FChatEntryAdapter messageAdapter;
     protected ListView lvMessages;
+
+    protected View root;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -82,7 +87,19 @@ public class ChannelFragment extends Fragment{
         return this.channelName;
     }
 
-    public void addMessage(final FChatEntry message){
+    protected void setMessages(final List<FChatEntry> messages){
+        if(this.messageAdapter != null){
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    messageAdapter.clear();
+                    messageAdapter.addAll(messages);
+                }
+            });
+        }
+    }
+
+    protected void addMessage(final FChatEntry message){
         if(this.messageAdapter != null){
             getActivity().runOnUiThread(new Runnable() {
                 @Override

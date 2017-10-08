@@ -8,8 +8,14 @@
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/action_test"
-        android:icon="@drawable/ic_open_channel_list"
-        android:title="Test"
+        android:id="@+id/action_friends"
+        android:icon="@drawable/ic_friends_icon"
+        android:title="Friends"
         app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_test"
+        android:icon="@drawable/icon_service"
+        android:title="Test"
+        app:showAsAction="never"/>
 </menu>

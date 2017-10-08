@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
@@ -27,7 +28,7 @@ public class FCharacterListLargeAdapter extends FCharacterListAdapter {
         TextView username;
     }
 
-    public FCharacterListLargeAdapter(ArrayList<FCharacter> data, Context context) {
+    public FCharacterListLargeAdapter(List<FCharacter> data, Context context) {
         super(context, R.layout.item_user, data);
     }
 

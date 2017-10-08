@@ -30,7 +30,6 @@ import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
 
 public class PublicChannelFragment extends ChannelFragment {
     private final static String LOG_TAG = "ChannelFragment";
-    View root;
     ListView lvUsers;
     EditText messageInput;
     EditText usernameInput;
@@ -84,6 +83,8 @@ public class PublicChannelFragment extends ChannelFragment {
 
         if(!this.channelName.equals(""))
             this.loadChannel(this.channelName);
+
+        this.type = ChannelType.PUBLIC;
     }
 
     @Override
@@ -163,16 +164,9 @@ public class PublicChannelFragment extends ChannelFragment {
             }
 
             @Override
-            public void onClientJoined(FCharacter character) {
-                updateUsers();
-            }
+            public void onUserListUpdated(List<FCharacter> characters){updateUsers(characters);}
 
-            @Override
-            public void onClientLeft(FCharacter character) {
-                updateUsers();
-            }
         });
-
 
         Log.d(LOG_TAG, "Channel " + channel + " has " + this.channel.getUsers().size() + " users and " +  this.channel.getEntries().size() + " messages");
     }

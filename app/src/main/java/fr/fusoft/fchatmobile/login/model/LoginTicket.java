@@ -85,4 +85,12 @@ public class LoginTicket implements Serializable {
 
     public String getCharacter(){return this.selectedCharacter;}
     public String getAccount() {return this.account;};
+
+    public List<String> getFriends(String character){
+        return this.friends.get(this.characters.indexOf(character));
+    }
+
+    public List<String> getBookmarks(){
+        return this.bookmarks;
+    }
 }

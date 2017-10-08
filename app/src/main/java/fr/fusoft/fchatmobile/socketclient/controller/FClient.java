@@ -34,7 +34,9 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.LIS;
 import fr.fusoft.fchatmobile.socketclient.model.commands.MSG;
 import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.PRD;
+import fr.fusoft.fchatmobile.socketclient.model.commands.PRI;
 import fr.fusoft.fchatmobile.socketclient.model.commands.PRO;
+import fr.fusoft.fchatmobile.socketclient.model.commands.STA;
 import fr.fusoft.fchatmobile.socketclient.model.commands.VAR;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FConnectionMessage;
@@ -55,16 +57,15 @@ public class FClient {
         void onChannelJoined(String channel);
         void onChannelLeft(String channel);
         void onChannelListReceived(List<FChannel> channels);
-
-        void onMessageReceived(String channel, FTextMessage message);
-        void onMessageSent(String channel, FTextMessage message);
-
         void onShowProfile(String character);
+        void onPrivateMessageReceived(String character);
     }
 
     private FClientListener mListener;
     private FSocketManager socket;
     private FCommandParser parser;
+    private FListApi api;
+
     private FServer server;
     private WebSocket webSocket;
 
@@ -76,6 +77,9 @@ public class FClient {
     private Map<String, FChannel> joinedChannels = new HashMap<>();
 
     private List<FChatEntry> debugMessages = new ArrayList<>();
+
+    private List<String> friends = new ArrayList<>();
+    private List<String> bookmarks = new ArrayList<>();
 
     private String mainUser;
 
@@ -97,17 +101,31 @@ public class FClient {
         this.ticket = ticket;
         this.mainUser = ticket.defaultCharacter;
         this.socket.connect();
+
+        setFriends(ticket.getFriends(ticket.defaultCharacter));
+        setBookmarks(ticket.getBookmarks());
+
+        this.api = new FListApi(ticket);
+    }
+
+    public void setBookmarks(List<String> bookmarks){
+        this.bookmarks = bookmarks;
+    }
+
+    public void setFriends(List<String> friends){
+        this.friends = friends;
+    }
+
+    public void bookmark(String name){
+        this.api.bookmark(name);
     }
 
     public void sendMessage(String message, String channel){
         MSG command = new MSG(channel, message);
         this.socket.sendCommand(command);
 
-        FTextMessage m = new FTextMessage(getCharacter(mainUser), command);
+        FTextMessage m = new FTextMessage(getCharacter(mainUser), command.getMessage());
         getOpenChannel(command.getChannel()).addMessage(m);
-
-        if(this.mListener != null)
-            this.mListener.onMessageSent(channel, m);
     }
 
     public void requestKinks(String character){
@@ -144,7 +162,7 @@ public class FClient {
             channel = getOpenChannel(command.getChannel());
         }
 
-        channel.userJoined(getCharacter(command.getCharacter()));
+        channel.userJoined(command.getCharacter());
     }
 
     private void channelLeft(LCH command){
@@ -167,19 +185,23 @@ public class FClient {
     }
 
     private void channelData(ICH command){
+        Log.i(LOG_TAG, "Command has " + command.getUsers().size() + " users");
+
         FChannel c = getOpenChannel(command.getChannel());
+        Log.e(LOG_TAG, "Retreived channel " + c.getName());
 
         List<String> users = command.getUsers();
-        Map<String, FCharacter> cUsers = new HashMap<>();
+        Log.e(LOG_TAG, "Retreived users");
 
-        for(String user : users){
-            cUsers.put(user,this.getCharacter(user));
-        }
-
-        c.setUsers(cUsers);
+        c.setUsers(users);
+        Log.e(LOG_TAG, "Added users");
 
         if (this.mListener != null)
             this.mListener.onChannelUpdated(command.getChannel());
+        Log.e(LOG_TAG, "Event sent");
+
+
+        Log.i(LOG_TAG, "Channel " + c.getName() + " has " + c.getUsers().size() + " users");
     }
 
     private void channelDescription(CDS command){
@@ -190,14 +212,12 @@ public class FClient {
 
     private void messageReceived(MSG command){
         FCharacter sender = getCharacter(command.getCharacter());
-        FTextMessage m = new FTextMessage(sender, command);
+        FTextMessage m = new FTextMessage(sender, command.getMessage());
 
         FChannel c = getOpenChannel(command.getChannel());
 
         if(c != null){
             c.addMessage(m);
-            if(this.mListener != null)
-                this.mListener.onMessageReceived(command.getChannel(), m);
         }else{
             Log.w(LOG_TAG, "Received message for channel " + command.getChannel() + " but channel is not opened");
         }
@@ -218,6 +238,10 @@ public class FClient {
 
     private void characterOffline(FLN command){
         this.characters.remove(command.getCharacter());
+
+        for(FChannel c : this.joinedChannels.values()){
+            c.userLeft(command.getCharacter());
+        }
     }
 
     private void characterListReceived(LIS command){
@@ -225,7 +249,7 @@ public class FClient {
             this.characters.put(c.getName(), c);
         }
 
-        Log.d(LOG_TAG, this.characters.size() + " users online");
+        //Log.d(LOG_TAG, this.characters.size() + " users online");
     }
 
     private void profileDataReceived(PRD command){
@@ -246,6 +270,32 @@ public class FClient {
         }
     }
 
+    private void characterStatusUpdated(STA command){
+        FCharacter c = getCharacter(command.getCharacter());
+        c.setStatus(command.getStatus());
+        c.setStatusMessage(command.getStatusMsg());
+
+        for(FChannel channel : this.joinedChannels.values()){
+            if(channel.hasCharacter(command.getCharacter()))
+                channel.userListUpdated();
+        }
+    }
+
+    public void sendPrivateMessage(String recipient, String message){
+        this.socket.sendCommand(new PRI(recipient, message));
+
+        if(this.mListener != null)
+            this.mListener.onPrivateMessageReceived(recipient);
+    }
+
+    private void privateMessageReceived(PRI command){
+        FCharacter c = getCharacter(command.getCharacter());
+        c.messageReceived(new FTextMessage(c, command.getMessage()));
+
+        if(this.mListener != null)
+            this.mListener.onPrivateMessageReceived(command.getCharacter());
+    }
+
     public FCharacter getMainUser(){
         return this.getCharacter(mainUser);
     }
@@ -256,6 +306,36 @@ public class FClient {
 
     public FCharacter getCharacter(String name){
         return this.characters.get(name);
+    }
+
+    public List<FCharacter> getCharacters(){return new ArrayList<>(this.characters.values());}
+
+    public List<FCharacter> getOnlineFriends(){
+        List<FCharacter> onlineFriends = new ArrayList<>();
+
+        for(String s : this.friends){
+            if(this.characters.containsKey(s)){
+                onlineFriends.add(this.characters.get(s));
+            }
+        }
+
+        Collections.sort(onlineFriends);
+
+        return onlineFriends;
+    }
+
+    public List<FCharacter> getOnlineBookmarks(){
+        List<FCharacter> onlineBookmarks = new ArrayList<>();
+
+        for(String s : this.bookmarks){
+            if(this.characters.containsKey(s)){
+                onlineBookmarks.add(this.characters.get(s));
+            }
+        }
+
+        Collections.sort(onlineBookmarks);
+
+        return onlineBookmarks;
     }
 
     private void setupParser(){
@@ -350,6 +430,12 @@ public class FClient {
             public void onProfileData(PRD command){
                 profileDataReceived(command);
             }
+
+            @Override
+            public void onCharacterStatus(STA command){ characterStatusUpdated(command); }
+
+            @Override
+            public void onPrivateMessage(PRI command){ privateMessageReceived(command);}
         });
 
     }
