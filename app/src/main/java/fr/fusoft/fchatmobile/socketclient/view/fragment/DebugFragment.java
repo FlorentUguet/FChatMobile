@@ -23,11 +23,12 @@ import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
 
 public class DebugFragment extends ChannelFragment {
     private static final String LOG_TAG = "DebugFragment";
-    View root;
 
     @Override
     public void onCreate(Bundle savedInstanceBundle){
         super.onCreate(savedInstanceBundle);
+        this.iconFile = "";
+        this.channelName = "Debug";
     }
 
     @Override
@@ -45,40 +46,53 @@ public class DebugFragment extends ChannelFragment {
         load();
     }
 
-    @Override
-    public void onStop(){
-        super.onStop();
-    }
-
     public void load(){
         Log.d(LOG_TAG, "Loading Client");
+
         if(this.messageAdapter == null){
-            this.messageAdapter = new FChatEntryAdapter(new ArrayList<FChatEntry>(),getActivity());
-            this.lvMessages.setAdapter(this.messageAdapter);
+            Log.d(LOG_TAG, "Initializing Message Adapter");
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    DebugFragment.this.messageAdapter = new FChatEntryAdapter(new ArrayList<FChatEntry>(),getActivity());
+                    DebugFragment.this.lvMessages.setAdapter(DebugFragment.this.messageAdapter);
+                }
+            });
         }
 
-        Activity act = getActivity();
-        FChatMobileApplication app = (FChatMobileApplication)act.getApplication();
-        FClient client = app.getClient();
+        FChatMobileApplication app = (FChatMobileApplication)getActivity().getApplication();
+        final FClient client = app.getClient();
 
         if(client != null){
-            this.messageAdapter.clear();
-            this.messageAdapter.addAll(client.getDebugMessages());
-            this.messageAdapter.notifyDataSetChanged();
-        }
+            Log.d(LOG_TAG, "Setting up client");
 
+            client.setDebugListener(new FClient.FClientDebugListener() {
+                @Override
+                public void onTextSent(String message) {
+                    insertCommand(false, ">> " + message);
+                    Log.d(LOG_TAG, ">> " + message);
+                }
+
+                @Override
+                public void onTextReceived(String message) {
+                    insertCommand(true, "<< " + message);
+                    Log.d(LOG_TAG, "<< " + message);
+                }
+            });
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setMessages(client.getDebugMessages());
+                }
+            });
+        }else{
+            Log.e(LOG_TAG, "Client could not be loaded");
+        }
     }
 
     public void insertCommand(boolean received, String message){
         final FDebugMessage m = new FDebugMessage(received, message);
         addMessage(m);
-    }
-
-    public String getIcon(){
-        return "";
-    }
-
-    public String getChannelName(){
-        return "Debug";
     }
 }

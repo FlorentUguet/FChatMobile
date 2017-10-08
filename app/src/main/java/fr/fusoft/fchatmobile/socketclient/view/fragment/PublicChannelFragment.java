@@ -76,14 +76,7 @@ public class PublicChannelFragment extends ChannelFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (savedInstanceState != null) {
-            //Restore the fragment's state here
-            this.channelName = savedInstanceState.getString("channel");
-        }
-
-        if(!this.channelName.equals(""))
-            this.loadChannel(this.channelName);
-
+        this.loadChannel(this.channelName);
         this.type = ChannelType.PUBLIC;
     }
 
@@ -177,8 +170,7 @@ public class PublicChannelFragment extends ChannelFragment {
             public void run() {
                 if(messageAdapter == null){updateMessages();}
                 else{
-                    messageAdapter.add(entry);
-                    messageAdapter.notifyDataSetChanged();
+                    addMessage(entry);
                 }
             }
         });
@@ -195,10 +187,7 @@ public class PublicChannelFragment extends ChannelFragment {
                 if(messageAdapter == null){
                     createMessageAdapter();
                 }
-
-                messageAdapter.clear();
-                messageAdapter.addAll(entries);
-                messageAdapter.notifyDataSetChanged();
+                setMessages(entries);
             }
         });
     }

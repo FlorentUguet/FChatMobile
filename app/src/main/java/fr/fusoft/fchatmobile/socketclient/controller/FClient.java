@@ -37,6 +37,7 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.PRD;
 import fr.fusoft.fchatmobile.socketclient.model.commands.PRI;
 import fr.fusoft.fchatmobile.socketclient.model.commands.PRO;
 import fr.fusoft.fchatmobile.socketclient.model.commands.STA;
+import fr.fusoft.fchatmobile.socketclient.model.commands.TPN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.VAR;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FConnectionMessage;
@@ -51,17 +52,21 @@ public class FClient {
     public interface FClientListener{
         void onConnected();
         void onDisconnected();
-        void onTextSent(String message);
-        void onTextReceived(String message);
-        void onChannelUpdated(String channel);
         void onChannelJoined(String channel);
         void onChannelLeft(String channel);
         void onChannelListReceived(List<FChannel> channels);
         void onShowProfile(String character);
-        void onPrivateMessageReceived(String character);
+        void onPrivateMessageReceived(FCharacter character);
+    }
+
+    public interface FClientDebugListener{
+        void onTextSent(String message);
+        void onTextReceived(String message);
     }
 
     private FClientListener mListener;
+    private FClientDebugListener mDebugListener;
+
     private FSocketManager socket;
     private FCommandParser parser;
     private FListApi api;
@@ -96,6 +101,8 @@ public class FClient {
     public void setListener(FClientListener listener){
         this.mListener = listener;
     }
+
+    public void setDebugListener(FClientDebugListener listener){ this.mDebugListener = listener; }
 
     public void start(LoginTicket ticket){
         this.ticket = ticket;
@@ -178,29 +185,13 @@ public class FClient {
             //If it's another user
             FChannel channel = getOpenChannel(c);
             channel.userLeft(command.getCharacter());
-
-            if (this.mListener != null)
-                this.mListener.onChannelUpdated(command.getChannel());
         }
     }
 
     private void channelData(ICH command){
-        Log.i(LOG_TAG, "Command has " + command.getUsers().size() + " users");
-
         FChannel c = getOpenChannel(command.getChannel());
-        Log.e(LOG_TAG, "Retreived channel " + c.getName());
-
         List<String> users = command.getUsers();
-        Log.e(LOG_TAG, "Retreived users");
-
         c.setUsers(users);
-        Log.e(LOG_TAG, "Added users");
-
-        if (this.mListener != null)
-            this.mListener.onChannelUpdated(command.getChannel());
-        Log.e(LOG_TAG, "Event sent");
-
-
         Log.i(LOG_TAG, "Channel " + c.getName() + " has " + c.getUsers().size() + " users");
     }
 
@@ -231,6 +222,7 @@ public class FClient {
 
     private void characterOnline(NLN command){
         FCharacter c = new FCharacter(command);
+        c.setClient(this);
 
         if(!this.characters.containsKey(c.getName()))
             this.characters.put(c.getName(), c);
@@ -246,6 +238,7 @@ public class FClient {
 
     private void characterListReceived(LIS command){
         for(FCharacter c : command.getCharacters()){
+            c.setClient(this);
             this.characters.put(c.getName(), c);
         }
 
@@ -281,11 +274,20 @@ public class FClient {
         }
     }
 
+    private void typingStatusChanged(TPN command){
+        FCharacter c = getCharacter(command.getCharacter());
+        c.setTypingStatus(command.getStatus());
+    }
+
     public void sendPrivateMessage(String recipient, String message){
         this.socket.sendCommand(new PRI(recipient, message));
 
         if(this.mListener != null)
-            this.mListener.onPrivateMessageReceived(recipient);
+            this.mListener.onPrivateMessageReceived(getCharacter(recipient));
+    }
+
+    public void sendTypingStatus(FCharacter.Typing status){
+        this.socket.sendCommand(new TPN(this.mainUser, status));
     }
 
     private void privateMessageReceived(PRI command){
@@ -293,7 +295,7 @@ public class FClient {
         c.messageReceived(new FTextMessage(c, command.getMessage()));
 
         if(this.mListener != null)
-            this.mListener.onPrivateMessageReceived(command.getCharacter());
+            this.mListener.onPrivateMessageReceived(c);
     }
 
     public FCharacter getMainUser(){
@@ -436,6 +438,9 @@ public class FClient {
 
             @Override
             public void onPrivateMessage(PRI command){ privateMessageReceived(command);}
+
+            @Override
+            public void onTyping(TPN command) { typingStatusChanged(command);}
         });
 
     }
@@ -455,13 +460,13 @@ public class FClient {
 
             @Override
             public void onTextReceived(String message) {
-                if(mListener != null) mListener.onTextReceived(message);
+                if(mDebugListener != null) mDebugListener.onTextReceived(message);
                 debugMessages.add(new FDebugMessage(true, message));
             }
 
             @Override
             public void onTextSent(String message) {
-                if(mListener != null) mListener.onTextSent(message);
+                if(mDebugListener != null) mDebugListener.onTextSent(message);
                 debugMessages.add(new FDebugMessage(false, message));
             }
         });

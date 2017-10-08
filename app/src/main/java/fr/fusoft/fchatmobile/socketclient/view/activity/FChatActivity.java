@@ -27,6 +27,7 @@ import fr.fusoft.fchatmobile.socketclient.controller.FClient;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FChannel;
+import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChannelFragmentAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
@@ -215,22 +216,6 @@ public class FChatActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, "Client disconnected");
             }
 
-            @Override
-            public void onTextSent(String message) {
-                dbgFragment.insertCommand(false,message);
-                Log.d(LOG_TAG, ">> " + message);
-            }
-
-            @Override
-            public void onTextReceived(String message) {
-                dbgFragment.insertCommand(true,message);
-                Log.d(LOG_TAG, "<< " + message);
-            }
-
-            @Override
-            public void onChannelUpdated(String channel) {
-                channelUpdated(channel);
-            }
 
             @Override
             public void onChannelJoined(String channel) {
@@ -251,7 +236,7 @@ public class FChatActivity extends AppCompatActivity {
             public void onShowProfile(String character){ showProfile(character); }
 
             @Override
-            public void onPrivateMessageReceived(String character){ privateMessageReceived(character); }
+            public void onPrivateMessageReceived(FCharacter character){ privateMessageReceived(character); }
         });
     }
 
@@ -276,10 +261,22 @@ public class FChatActivity extends AppCompatActivity {
         f.show(getSupportFragmentManager(), "dialog");
     }
 
-    private void privateMessageReceived(String character){
-        PrivateMessageFragment f = new PrivateMessageFragment();
-        f.setChannelName(character);
-        addFragment(f);
+    private void privateMessageReceived(FCharacter character){
+        if(!isChannelOpen(character.getName())){
+            PrivateMessageFragment f = new PrivateMessageFragment();
+            f.setChannelName(character.getName());
+            f.setIconFile(character.getAvatarUrl());
+            addFragment(f);
+        }
+    }
+
+    private boolean isChannelOpen(String name){
+        for(ChannelFragment c : this.fragments){
+            if(c.getChannelName().equals(name)){
+                return true;
+            }
+        }
+        return false;
     }
 
     private void joinChannel(FChannel c){
@@ -295,10 +292,6 @@ public class FChatActivity extends AppCompatActivity {
         PublicChannelFragment f = new PublicChannelFragment();
         f.setChannelName(channel);
         addFragment(f);
-    }
-
-    public void channelUpdated(String channel){
-
     }
 
     public void channelLeft(String channel){

@@ -86,11 +86,39 @@ public class FCharacter implements Comparable {
         }
     }
 
+    public enum Typing{
+        CLEAR("clear"),
+        PAUSED("paused"),
+        TYPING("typing");
+
+        private String label;
+
+        Typing(String label){
+            this.label = label;
+        }
+
+        public String getLabel(){
+            return this.label;
+        }
+
+        public static Typing fromlabel(String label){
+            for(Typing t : values()){
+                if(t.getLabel().equals(label)){
+                    return t;
+                }
+            }
+
+            return CLEAR;
+        }
+    }
+
     private String name;
-    private Gender gender;
     private String genderString;
-    private Status status;
     private String statusMessage = "";
+
+    private Gender gender = Gender.ERROR;
+    private Status status = Status.ONLINE;
+    private Typing typing = Typing.CLEAR;
 
     private FClient client;
 
@@ -99,6 +127,7 @@ public class FCharacter implements Comparable {
     public interface FCharacterListener{
         void onPrivateMessage(FChatEntry message);
         void onPrivateMessageListUpdated(List<FChatEntry> messages);
+        void onTypingStatusChanged(Typing status);
     }
 
     private FCharacterListener mListener;
@@ -130,12 +159,24 @@ public class FCharacter implements Comparable {
         this.mListener = listener;
     }
 
+    public void setTypingStatus(String label){
+        setTypingStatus(Typing.fromlabel(label));
+    }
+
+    public void setTypingStatus(Typing t){
+        this.typing = t;
+
+        if(this.mListener != null)
+            this.mListener.onTypingStatusChanged(t);
+    }
+
     public void sendMessage(String message){
         this.client.sendPrivateMessage(this.name, message);
         addMessage(new FTextMessage(this.client.getMainUser(), message));
     }
 
     public void messageReceived(FChatEntry message){
+        setTypingStatus(Typing.CLEAR);
         addMessage(message);
     }
 

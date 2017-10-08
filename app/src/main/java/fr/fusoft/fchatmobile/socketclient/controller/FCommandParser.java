@@ -19,6 +19,7 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.PRD;
 import fr.fusoft.fchatmobile.socketclient.model.commands.PRI;
 import fr.fusoft.fchatmobile.socketclient.model.commands.STA;
+import fr.fusoft.fchatmobile.socketclient.model.commands.TPN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.VAR;
 
 /**
@@ -49,6 +50,7 @@ public class FCommandParser {
         void onCharacterList(LIS command);
         void onCharacterStatus(STA command);
         void onPrivateMessage(PRI command);
+        void onTyping(TPN command);
     }
 
     FCommandParserListener listener;
@@ -122,6 +124,9 @@ public class FCommandParser {
                 break;
             case "PRI":
                 listener.onPrivateMessage(new PRI(command));
+                break;
+            case "TPN":
+                listener.onTyping(new TPN(command));
                 break;
             default:
                 listener.onUnhandledCommand(command);

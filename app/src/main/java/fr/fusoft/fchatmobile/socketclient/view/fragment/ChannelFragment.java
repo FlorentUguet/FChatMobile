@@ -2,6 +2,7 @@ package fr.fusoft.fchatmobile.socketclient.view.fragment;
 
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
@@ -43,33 +44,48 @@ public class ChannelFragment extends Fragment{
     protected View root;
 
     @Override
+    public void onCreate(Bundle savedInstanceBundle){
+        super.onCreate(savedInstanceBundle);
+        Log.w(LOG_TAG, this.channelName + " onCreate()");
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
             //Restore the fragment's state here
+            this.channelName = savedInstanceState.getString("channelName");
         }
+
+        Log.w(LOG_TAG, this.channelName + " onActivityCreated()");
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        Log.w(LOG_TAG, this.channelName + " onStart()");
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Log.w(LOG_TAG, this.channelName + " onResume()");
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.w(LOG_TAG, this.channelName + " onStop()");
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         //Save the fragment's state here
+
+        outState.putString("channelName", this.channelName);
     }
 
-    @Override
-    public void onStart(){
-        super.onStart();
-    }
-
-    @Override
-    public void onResume(){
-        super.onResume();
-    }
-
-    @Override
-    public void onStop(){
-        super.onStop();
-    }
 
     public void setIconFile(String url){
         this.iconFile = url;
@@ -100,7 +116,7 @@ public class ChannelFragment extends Fragment{
     }
 
     protected void addMessage(final FChatEntry message){
-        if(this.messageAdapter != null){
+        if(messageAdapter != null){
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
