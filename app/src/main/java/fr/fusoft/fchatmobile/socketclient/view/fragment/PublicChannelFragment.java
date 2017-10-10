@@ -137,8 +137,16 @@ public class PublicChannelFragment extends ChannelFragment {
     public void loadChannel(FChannel channel){
         this.channel = channel;
 
-        updateMessages();
-        updateUsers();
+        if(this.messageAdapter == null){
+            this.createMessageAdapter();
+        }
+
+        if(this.userAdapter == null){
+            this.initUserAdapter();
+        }
+
+        this.initListView(channel.getEntries());
+        this.initUserListView(channel.getUsers());
 
         this.channel.setListener(new FChannel.FChannelListener() {
             @Override
@@ -184,9 +192,6 @@ public class PublicChannelFragment extends ChannelFragment {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(messageAdapter == null){
-                    createMessageAdapter();
-                }
                 setMessages(entries);
             }
         });
@@ -200,10 +205,6 @@ public class PublicChannelFragment extends ChannelFragment {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(userAdapter == null){
-                    createUserAdapter();
-                }
-
                 userAdapter.clear();
                 userAdapter.addAll(users);
                 userAdapter.notifyDataSetChanged();
@@ -211,22 +212,26 @@ public class PublicChannelFragment extends ChannelFragment {
         });
     }
 
-    public void createMessageAdapter(){
-        messageAdapter = new FChatEntryAdapter(new ArrayList<FChatEntry>(),getActivity());
-        lvMessages.setAdapter(messageAdapter);
+    public void initUserAdapter(){
+        initUserAdapter(true);
     }
 
-    public void createUserAdapter(){
-        createUserAdapter(true);
-    }
-
-    public void createUserAdapter(boolean compact){
+    protected void initUserAdapter(boolean compact){
         if(compact){
             userAdapter = new FCharacterListCompactAdapter(new ArrayList<FCharacter>(),  getActivity());
         }else{
             userAdapter = new FCharacterListLargeAdapter(new ArrayList<FCharacter>(),  getActivity());
         }
-        lvUsers.setAdapter(userAdapter);
+    }
+
+    protected void initUserListView(final List<FCharacter> users){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                lvUsers.setAdapter(userAdapter);
+                updateUsers(users);
+            }
+        });
     }
 
     public String getIcon(){

@@ -6,8 +6,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import fr.fusoft.fchatmobile.FChatMobileApplication;
+import fr.fusoft.fchatmobile.socketclient.controller.FClient;
+import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
 
@@ -36,10 +40,14 @@ public class ChannelFragment extends Fragment{
     }
 
     protected String channelName = "";
+    protected int lastPosition = -1;
     protected String iconFile = "";
+
     protected ChannelType type = ChannelType.DEBUG;
     protected FChatEntryAdapter messageAdapter;
     protected ListView lvMessages;
+
+    protected FClient client;
 
     protected View root;
 
@@ -55,6 +63,7 @@ public class ChannelFragment extends Fragment{
         if (savedInstanceState != null) {
             //Restore the fragment's state here
             this.channelName = savedInstanceState.getString("channelName");
+            this.lastPosition = savedInstanceState.getInt("lastPosition");
         }
 
         Log.w(LOG_TAG, this.channelName + " onActivityCreated()");
@@ -84,8 +93,30 @@ public class ChannelFragment extends Fragment{
         //Save the fragment's state here
 
         outState.putString("channelName", this.channelName);
+        outState.putInt("lastPosition", this.lastPosition);
     }
 
+    protected void initClient(){
+        this.client = ((FChatMobileApplication)getActivity().getApplication()).getClient();
+    }
+
+    protected void initListView(final List<FChatEntry> entries){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                lvMessages.setAdapter(messageAdapter);
+                setMessages(entries);
+
+                if(ChannelFragment.this.lastPosition >= 0){
+                    lvMessages.setSelection(ChannelFragment.this.lastPosition);
+                }
+            }
+        });
+    }
+
+    protected void createMessageAdapter(){
+        messageAdapter = new FChatEntryAdapter(new ArrayList<FChatEntry>(),getActivity());
+    }
 
     public void setIconFile(String url){
         this.iconFile = url;

@@ -51,39 +51,26 @@ public class DebugFragment extends ChannelFragment {
 
         if(this.messageAdapter == null){
             Log.d(LOG_TAG, "Initializing Message Adapter");
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    DebugFragment.this.messageAdapter = new FChatEntryAdapter(new ArrayList<FChatEntry>(),getActivity());
-                    DebugFragment.this.lvMessages.setAdapter(DebugFragment.this.messageAdapter);
-                }
-            });
+            this.createMessageAdapter();
         }
 
-        FChatMobileApplication app = (FChatMobileApplication)getActivity().getApplication();
-        final FClient client = app.getClient();
+        this.initClient();
 
-        if(client != null){
+        if(this.client != null){
             Log.d(LOG_TAG, "Setting up client");
 
-            client.setDebugListener(new FClient.FClientDebugListener() {
+            this.initListView(this.client.getDebugMessages());
+            this.client.setDebugListener(new FClient.FClientDebugListener() {
                 @Override
                 public void onTextSent(String message) {
-                    insertCommand(false, ">> " + message);
+                    DebugFragment.this.insertCommand(false, ">> " + message);
                     Log.d(LOG_TAG, ">> " + message);
                 }
 
                 @Override
                 public void onTextReceived(String message) {
-                    insertCommand(true, "<< " + message);
+                    DebugFragment.this.insertCommand(true, "<< " + message);
                     Log.d(LOG_TAG, "<< " + message);
-                }
-            });
-
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    setMessages(client.getDebugMessages());
                 }
             });
         }else{
@@ -93,6 +80,6 @@ public class DebugFragment extends ChannelFragment {
 
     public void insertCommand(boolean received, String message){
         final FDebugMessage m = new FDebugMessage(received, message);
-        addMessage(m);
+        this.addMessage(m);
     }
 }
