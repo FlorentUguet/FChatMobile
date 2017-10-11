@@ -209,6 +209,14 @@ public class FChatActivity extends AppCompatActivity {
 
     protected void showFriendsList(){
         FriendsListDialogFragment f = FriendsListDialogFragment.newInstance();
+
+        f.setListener(new FriendsListDialogFragment.FriendsListListener() {
+            @Override
+            public void onCharacterSelected(FCharacter character) {
+                openPrivateMessaging(character);
+            }
+        });
+
         f.show(getSupportFragmentManager(), "dialog");
     }
 
@@ -368,6 +376,10 @@ public class FChatActivity extends AppCompatActivity {
     }
 
     private void privateMessageReceived(FCharacter character){
+        openPrivateMessaging(character);
+    }
+
+    private void openPrivateMessaging(FCharacter character){
         if(!isChannelOpen(character.getName())){
             PrivateMessageFragment f = new PrivateMessageFragment();
             f.setChannelName(character.getName());

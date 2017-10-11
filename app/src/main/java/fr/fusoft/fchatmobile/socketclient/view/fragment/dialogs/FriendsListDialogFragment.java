@@ -35,6 +35,16 @@ public class FriendsListDialogFragment extends DialogFragment {
 
     private FClient client;
 
+    public interface FriendsListListener{
+        void onCharacterSelected(FCharacter character);
+    }
+
+    private FriendsListListener mListener;
+
+    public void setListener(FriendsListListener listener){
+        mListener = listener;
+    }
+
     public static FriendsListDialogFragment newInstance() {
         FriendsListDialogFragment f = new FriendsListDialogFragment();
 
@@ -68,8 +78,8 @@ public class FriendsListDialogFragment extends DialogFragment {
         tabHost.addTab(tab2);
 
         //Logic
-        List<FCharacter> friends = client.getOnlineFriends();
-        List<FCharacter> bookmarks = client.getOnlineBookmarks();
+        final List<FCharacter> friends = client.getOnlineFriends();
+        final List<FCharacter> bookmarks = client.getOnlineBookmarks();
 
         adapterFriends = new FCharacterListLargeAdapter(friends, getActivity());
         adapterBookmarks = new FCharacterListLargeAdapter(bookmarks, getActivity());
@@ -81,14 +91,18 @@ public class FriendsListDialogFragment extends DialogFragment {
         this.lvFriends.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+                FCharacter selected = friends.get(i);
+                if(mListener != null)
+                    mListener.onCharacterSelected(selected);
             }
         });
 
         this.lvBookmarks.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+                FCharacter selected = bookmarks.get(i);
+                if(mListener != null)
+                    mListener.onCharacterSelected(selected);
             }
         });
 

@@ -72,6 +72,7 @@ public class ChannelFragment extends Fragment{
     @Override
     public void onStart(){
         super.onStart();
+        getActivity().setTitle(this.channelName);
         Log.w(LOG_TAG, this.channelName + " onStart()");
     }
 

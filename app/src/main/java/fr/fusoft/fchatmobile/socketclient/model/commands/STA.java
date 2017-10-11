@@ -16,7 +16,7 @@ public class STA extends FCommand {
         super(source);
 
         try{
-            this.status = this.data.getString("variable");
+            this.status = this.data.getString("status");
             this.character = this.data.getString("character");
             this.statusMsg = this.data.getString("statusmsg");
         }catch(Exception e){

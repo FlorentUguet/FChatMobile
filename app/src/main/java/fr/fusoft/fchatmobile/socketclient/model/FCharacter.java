@@ -316,15 +316,18 @@ public class FCharacter implements Comparable {
 
         int cName = this.getName().compareTo(other.getName());
         int cGender = this.getGender().getName().compareTo(other.getGender().getName());
+        int cStatus = this.getStatusVal() > other.getStatusVal() ? +1 : this.getStatusVal() < other.getStatusVal() ? -1 : 0;
 
-        if(this.getStatusVal() < other.getStatusVal()){
-            return -1;
-        }
-
-        if(cGender != 0){
-            return cGender;
+        if(cStatus == 0){
+            if(cGender == 0){
+                return cName;
+            }else{
+                return cGender;
+            }
         }else{
-            return cName;
+            return cStatus;
         }
+
+
     }
 }
