@@ -9,6 +9,8 @@
 
     <string name="exit">Exit</string>
 
+    <string name="shared_prefs">fchatmobile</string>
+
     <string name="dialog_select_channels">Public Channels</string>
     <string name="dialog_select_character">Select Character</string>
     <string name="username">Username</string>
@@ -19,6 +21,7 @@
     <string name="ok">OK</string>
     <string name="open_dm">Open DM</string>
     <string name="close">Close</string>
+    <string name="save_status">Save Status Message</string>
 
     <string name="add_bookmark">Bookmark</string>
     <string name="remove_bookmark">Remove Bookmark</string>

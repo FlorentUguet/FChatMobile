@@ -7,14 +7,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AlertDialog;
+import android.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -28,7 +33,6 @@ import fr.fusoft.fchatmobile.socketclient.controller.FClient;
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FChannel;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
-import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChannelFragmentAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.DebugFragment;
@@ -36,6 +40,7 @@ import fr.fusoft.fchatmobile.socketclient.view.fragment.FriendsListDialogFragmen
 import fr.fusoft.fchatmobile.socketclient.view.fragment.PrivateMessageFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.PublicChannelFragment;
 import fr.fusoft.fchatmobile.socketclient.view.fragment.UserDialogFragment;
+import fr.fusoft.fchatmobile.utils.network.Preferences;
 
 /**
  * Created by Florent on 05/09/2017.
@@ -105,6 +110,9 @@ public class FChatActivity extends AppCompatActivity {
                 return true;
             case R.id.action_friends:
                 showFriendsList();
+                return true;
+            case R.id.action_status:
+                showStatusDialog();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -259,6 +267,69 @@ public class FChatActivity extends AppCompatActivity {
     private void showProfile(String character){
         UserDialogFragment f = UserDialogFragment.newInstance(character);
         f.show(getSupportFragmentManager(), "dialog");
+    }
+
+    private void showStatusDialog(){
+        ContextThemeWrapper wrapper = new ContextThemeWrapper(this, android.R.style.Theme_Holo_Dialog);
+        AlertDialog.Builder builder = new AlertDialog.Builder(wrapper);
+        View root = View.inflate(this, R.layout.dialog_status, null);
+
+        //Dialog's widgets
+        final EditText input = (EditText) root.findViewById(R.id.editTextStatus);
+        final Spinner spinner = (Spinner) root.findViewById(R.id.spinnerStatus);
+        final CheckBox checkBox = (CheckBox) root.findViewById(R.id.checkBoxStatus);
+        final Preferences p = new Preferences(FChatActivity.this);
+
+        //Action on spinner's item changed
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                input.setText(p.getDefaultStatusMessage(FCharacter.Status.getIdentifiers().get(i)));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
+        adapter.addAll(FCharacter.Status.getLabels());
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+
+        //Generating the dialog
+        builder.setView(root)
+                .setMessage("Update your status")
+                .setTitle("Status")
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        setStatus(FCharacter.Status.getIdentifiers().get(spinner.getSelectedItemPosition()),input.getText().toString(), checkBox.isChecked());
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+        AlertDialog d = builder.create();
+        d.show();
+    }
+
+    private void setStatus(String status, String message, boolean save){
+        this.client.getMainUser().requestStatus(status, message);
+
+        if(save){
+            Preferences p = new Preferences(this);
+            p.setDefaultStatusMessage(status, message);
+        }
     }
 
     private void privateMessageReceived(FCharacter character){

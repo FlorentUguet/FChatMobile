@@ -25,23 +25,72 @@ import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 
 public class FCharacter implements Comparable {
     public enum Status{
-        LOOKING(0, "Looking"),
-        ONLINE(1, "Online"),
-        AWAY(2, "Away"),
-        BUSY(3, "Busy"),
-        DND(4, "Do Not Disturb"),
-        UNDOCUMENTED(4, "X");
+        LOOKING("Looking", "looking"),
+        ONLINE("Online", "online"),
+        AWAY("Away", "away"),
+        BUSY("Busy", "busy"),
+        DND("Do Not Disturb", "dnd"),
+        IDLE("Idle", "idle"),
+        CROWN("Crown", "crown");
 
         private String label;
-        private int value;
+        private String id;
 
-        Status(int i, String label){
-            this.value = i;
+        Status(String label, String id){
+            this.id = id;
             this.label = label;
         }
 
+        public static Status fromlabel(String label){
+            for(Status s : values()){
+                if(s.getLabel().equals(label)){
+                    return s;
+                }
+            }
+            return null;
+        }
+
+        public static Status fromID(String id){
+            for(Status s : values()){
+                if(s.getIdentifier().equals(id)){
+                    return s;
+                }
+            }
+            return null;
+        }
+
+        public static List<String> getLabels(){
+            List<String> labels = new ArrayList<>();
+
+            for(Status s : values()){
+                labels.add(s.getLabel());
+            }
+
+            return labels;
+        }
+
+        public static List<String> getIdentifiers(){
+            List<String> labels = new ArrayList<>();
+
+            for(Status s : values()){
+                labels.add(s.getIdentifier());
+            }
+
+            return labels;
+        }
+
+        public String getIdentifier(){
+            return this.id;
+        }
         public int getValue(){
-            return this.value;
+            int i = 0;
+
+            for(Status s : values()){
+                if(s.equals(this))
+                    return i;
+                i++;
+            }
+            return values().length;
         }
         public String getLabel(){return this.label;}
         public String getLetter(){return getLabel().substring(0,1);}
@@ -140,7 +189,7 @@ public class FCharacter implements Comparable {
         this.name = token.getIdentity();
         this.genderString = token.getGender();
         this.gender = Gender.fromString(genderString);
-        setStatus(token.getStatus());
+        this.status = Status.fromID(token.getStatus());
     }
 
     public FCharacter(String name, String gender, String status, String message){
@@ -148,7 +197,7 @@ public class FCharacter implements Comparable {
         this.genderString = gender;
         this.gender = Gender.fromString(gender);
         this.statusMessage = message;
-        setStatus(status);
+        this.status = Status.fromID(status);
     }
 
     public void setClient(FClient client){
@@ -216,27 +265,20 @@ public class FCharacter implements Comparable {
         this.profile.clear();
     }
 
-    public void setStatus(String status){
-        switch(status){
-            case "online":
-                this.status = Status.ONLINE;
-                break;
-            case "away":
-                this.status = Status.AWAY;
-                break;
-            case "busy":
-                this.status = Status.BUSY;
-                break;
-            case "looking":
-                this.status = Status.LOOKING;
-                break;
-            case "dnd":
-                this.status = Status.DND;
-                break;
-            default:
-                this.status = Status.UNDOCUMENTED;
-                break;
-        }
+    public void setStatus(String status, String message){
+        this.setStatus(status, message, true);
+    }
+
+    public void requestStatus(String status, String message){
+        this.setStatus(status, message, false);
+    }
+
+    private void setStatus(String status, String message, boolean received){
+        this.status = Status.fromID(status);
+        this.setStatusMessage(message);
+
+        if(!received)
+            this.client.setStatus(status, message);
     }
 
     public void setStatusMessage(String message){

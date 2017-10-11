@@ -265,8 +265,7 @@ public class FClient {
 
     private void characterStatusUpdated(STA command){
         FCharacter c = getCharacter(command.getCharacter());
-        c.setStatus(command.getStatus());
-        c.setStatusMessage(command.getStatusMsg());
+        c.setStatus(command.getStatus(), command.getStatusMsg());
 
         for(FChannel channel : this.joinedChannels.values()){
             if(channel.hasCharacter(command.getCharacter()))
@@ -277,6 +276,10 @@ public class FClient {
     private void typingStatusChanged(TPN command){
         FCharacter c = getCharacter(command.getCharacter());
         c.setTypingStatus(command.getStatus());
+    }
+
+    public void setStatus(String status, String message){
+        this.socket.sendCommand(new STA(status, message));
     }
 
     public void sendPrivateMessage(String recipient, String message){
