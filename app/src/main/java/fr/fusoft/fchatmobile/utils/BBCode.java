@@ -1,4 +1,4 @@
-package fr.fusoft.fchatmobile.utils.network;
+package fr.fusoft.fchatmobile.utils;
 
 import java.util.HashMap;
 import java.util.Map;

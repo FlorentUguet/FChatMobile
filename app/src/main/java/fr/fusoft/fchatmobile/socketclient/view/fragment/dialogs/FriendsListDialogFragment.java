@@ -1,32 +1,21 @@
-package fr.fusoft.fchatmobile.socketclient.view.fragment;
+package fr.fusoft.fchatmobile.socketclient.view.fragment.dialogs;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TabHost;
-import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import fr.fusoft.fchatmobile.FChatMobileApplication;
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.controller.FClient;
-import fr.fusoft.fchatmobile.socketclient.model.FChannel;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
-import fr.fusoft.fchatmobile.socketclient.model.ProfileData;
-import fr.fusoft.fchatmobile.socketclient.view.adapter.FProfileDataAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListAdapter;
-import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListCompactAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListLargeAdapter;
 
 /**

@@ -1,4 +1,4 @@
-package fr.fusoft.fchatmobile.utils.network;
+package fr.fusoft.fchatmobile.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;

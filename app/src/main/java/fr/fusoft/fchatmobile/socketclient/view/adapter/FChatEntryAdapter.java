@@ -12,6 +12,7 @@ import java.util.List;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
+import fr.fusoft.fchatmobile.utils.MessageFormatter;
 
 /**
  * Created by Florent on 06/09/2017.
@@ -82,8 +83,11 @@ public class FChatEntryAdapter extends ArrayAdapter<FChatEntry> {
 
         lastPosition = position;
 
-        viewHolder.header.setText(entry.getHeader());
-        viewHolder.content.setText(entry.getContent());
+        String header = entry.getHeader();
+        String content = entry.getContent();
+
+        viewHolder.header.setText(header);
+        viewHolder.content.setText(content);
         // Return the completed view to render on screen
         return convertView;
     }

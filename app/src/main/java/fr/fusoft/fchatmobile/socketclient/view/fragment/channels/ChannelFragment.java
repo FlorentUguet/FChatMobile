@@ -1,4 +1,4 @@
-package fr.fusoft.fchatmobile.socketclient.view.fragment;
+package fr.fusoft.fchatmobile.socketclient.view.fragment.channels;
 
 import android.os.Bundle;
 import android.app.Fragment;
@@ -11,7 +11,6 @@ import java.util.List;
 
 import fr.fusoft.fchatmobile.FChatMobileApplication;
 import fr.fusoft.fchatmobile.socketclient.controller.FClient;
-import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
 
@@ -42,6 +41,7 @@ public class ChannelFragment extends Fragment{
     protected String channelName = "";
     protected int lastPosition = -1;
     protected String iconFile = "";
+    protected String channelInfo = "";
 
     protected ChannelType type = ChannelType.DEBUG;
     protected FChatEntryAdapter messageAdapter;
@@ -133,6 +133,8 @@ public class ChannelFragment extends Fragment{
     public String getChannelName(){
         return this.channelName;
     }
+
+    public String getChannelInfo(){ return this.channelInfo; }
 
     protected void setMessages(final List<FChatEntry> messages){
         if(this.messageAdapter != null){

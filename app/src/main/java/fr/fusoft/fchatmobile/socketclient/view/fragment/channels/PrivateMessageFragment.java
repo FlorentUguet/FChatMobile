@@ -1,11 +1,10 @@
-package fr.fusoft.fchatmobile.socketclient.view.fragment;
+package fr.fusoft.fchatmobile.socketclient.view.fragment.channels;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -17,10 +16,10 @@ import java.util.List;
 import fr.fusoft.fchatmobile.FChatMobileApplication;
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.controller.FClient;
-import fr.fusoft.fchatmobile.socketclient.model.FChannel;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
+import fr.fusoft.fchatmobile.utils.BBCode;
 
 /**
  * Created by Florent on 08/10/2017.
@@ -129,5 +128,16 @@ public class PrivateMessageFragment extends ChannelFragment {
                 setTyping(status);
             }
         });
+    }
+
+    public String getChannelInfo(){
+        String text = "";
+
+        text += "Private Messaging " + getChannelName();
+
+        if(this.character != null){
+            text += "\n\n" + this.character.getStatusMessage();
+        }
+        return text;
     }
 }

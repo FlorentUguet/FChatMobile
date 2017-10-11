@@ -16,8 +16,14 @@
     <item
         android:id="@+id/action_status"
         android:icon="@drawable/ic_icon_status"
-        android:title="Friends"
-        app:showAsAction="always"/>
+        android:title="Status"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_chanel_info"
+        android:icon="@drawable/ic_channel_info"
+        android:title="Channel Info"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_test"

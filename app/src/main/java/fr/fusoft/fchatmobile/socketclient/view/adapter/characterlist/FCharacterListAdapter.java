@@ -1,27 +1,13 @@
 package fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.support.v4.content.ContextCompat;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
 import java.util.List;
 
-import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
-import fr.fusoft.fchatmobile.socketclient.view.activity.FChatActivity;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
-import fr.fusoft.fchatmobile.utils.network.DownloadImageTask;
 
 /**
  * Created by Florent on 05/09/2017.

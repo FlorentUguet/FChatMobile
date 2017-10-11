@@ -11,21 +11,11 @@
         <item name="android:buttonStyle">@style/FAppTheme.Button</item>
         <item name="android:editTextStyle">@style/FAppTheme.EditText</item>
         <item name="android:textViewStyle">@style/FAppTheme.TextView</item>
-        <item name="android:alertDialogStyle">@style/FAppTheme.Dialog.Alert</item>
     </style>
 
     <style name="FAppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="FAppTheme.Dialog.Alert" parent="Theme.AppCompat.Dialog.Alert">
-        <!-- Used for the buttons -->
-        <item name="colorAccent">@color/colorAccent</item>
-        <!-- Used for the title and text -->
-        <item name="android:textColorPrimary">@color/colorText</item>
-        <!-- Used for the background -->
-        <item name="android:background">@color/colorPrimaryBG</item>
     </style>
 
     <style name="FAppTheme.TextView" parent="android:Widget.TextView">

@@ -1,6 +1,5 @@
-package fr.fusoft.fchatmobile.socketclient.view.fragment;
+package fr.fusoft.fchatmobile.socketclient.view.fragment.channels;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,14 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import java.util.ArrayList;
-
-import fr.fusoft.fchatmobile.FChatMobileApplication;
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.controller.FClient;
-import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FDebugMessage;
-import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
 
 /**
  * Created by Florent on 06/09/2017.
@@ -29,6 +23,7 @@ public class DebugFragment extends ChannelFragment {
         super.onCreate(savedInstanceBundle);
         this.iconFile = "";
         this.channelName = "Debug";
+        this.channelInfo = "Debug channel to monitor incoming and outgoing traffic.";
     }
 
     @Override

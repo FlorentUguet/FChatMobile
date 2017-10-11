@@ -31,6 +31,7 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.KID;
 import fr.fusoft.fchatmobile.socketclient.model.commands.KIN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.LCH;
 import fr.fusoft.fchatmobile.socketclient.model.commands.LIS;
+import fr.fusoft.fchatmobile.socketclient.model.commands.LRP;
 import fr.fusoft.fchatmobile.socketclient.model.commands.MSG;
 import fr.fusoft.fchatmobile.socketclient.model.commands.NLN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.PRD;
@@ -39,6 +40,7 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.PRO;
 import fr.fusoft.fchatmobile.socketclient.model.commands.STA;
 import fr.fusoft.fchatmobile.socketclient.model.commands.TPN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.VAR;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FAdEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FConnectionMessage;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FDebugMessage;
@@ -125,6 +127,14 @@ public class FClient {
 
     public void bookmark(String name){
         this.api.bookmark(name);
+    }
+
+    public void sendAd(String message, String channel) {
+        LRP command = new LRP(channel, message);
+        this.socket.sendCommand(command);
+
+        FAdEntry m = new FAdEntry(getCharacter(mainUser), command.getMessage());
+        getOpenChannel(command.getChannel()).addAd(m);
     }
 
     public void sendMessage(String message, String channel){

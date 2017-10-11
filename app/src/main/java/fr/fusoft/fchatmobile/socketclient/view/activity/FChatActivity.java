@@ -4,11 +4,13 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
@@ -20,6 +22,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -34,13 +37,13 @@ import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FChannel;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FChannelFragmentAdapter;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.DebugFragment;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.FriendsListDialogFragment;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.PrivateMessageFragment;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.PublicChannelFragment;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.UserDialogFragment;
-import fr.fusoft.fchatmobile.utils.network.Preferences;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.channels.ChannelFragment;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.channels.DebugFragment;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.dialogs.FriendsListDialogFragment;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.channels.PrivateMessageFragment;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.channels.PublicChannelFragment;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.dialogs.UserDialogFragment;
+import fr.fusoft.fchatmobile.utils.Preferences;
 
 /**
  * Created by Florent on 05/09/2017.
@@ -53,6 +56,8 @@ public class FChatActivity extends AppCompatActivity {
     List<ChannelFragment> fragments = new ArrayList<>();
     DebugFragment dbgFragment;
     FChatMobileApplication app;
+
+    private int currentFragment = -1;
 
     FChannelFragmentAdapter adapter;
 
@@ -114,6 +119,9 @@ public class FChatActivity extends AppCompatActivity {
             case R.id.action_status:
                 showStatusDialog();
                 return true;
+            case R.id.action_chanel_info:
+                showChannelInfoDialog();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -163,13 +171,16 @@ public class FChatActivity extends AppCompatActivity {
     protected void showChannelList(final List<FChannel> channels){
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        CharSequence[] labels = new CharSequence[channels.size()];
+        String[] labels = new String[channels.size()];
+        boolean[] joined = new boolean[channels.size()];
 
-        for(int i=0;i<channels.size();i++)
+        for(int i=0;i<channels.size();i++){
             labels[i] = channels.get(i).getName();
+            joined[i] = client.getOpenChannel(labels[i]) != null;
+        }
 
         builder.setTitle(R.string.dialog_select_channels)
-                .setMultiChoiceItems(labels, null,
+                .setMultiChoiceItems(labels,joined,
                         new DialogInterface.OnMultiChoiceClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
@@ -269,9 +280,33 @@ public class FChatActivity extends AppCompatActivity {
         f.show(getSupportFragmentManager(), "dialog");
     }
 
+    protected void showChannelInfoDialog(){
+        Fragment f = getFragmentManager().findFragmentById(R.id.content);
+
+        if(f != null){
+            if(ChannelFragment.class.isInstance(f)){
+                ChannelFragment fragment = (ChannelFragment)f;
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                builder.setTitle(fragment.getChannelName())
+                        .setMessage(Html.fromHtml(fragment.getChannelInfo()))
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        });
+                builder.create().show();
+            }else{
+                Log.e(LOG_TAG, "Fragment retreived for info is not a ChannelFragment (" + f.getClass().getName()+ ")");
+            }
+        }else{
+            Log.e(LOG_TAG, "Fragment retreived for info is null");
+        }
+    }
+
     private void showStatusDialog(){
-        ContextThemeWrapper wrapper = new ContextThemeWrapper(this, android.R.style.Theme_Holo_Dialog);
-        AlertDialog.Builder builder = new AlertDialog.Builder(wrapper);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View root = View.inflate(this, R.layout.dialog_status, null);
 
         //Dialog's widgets
@@ -366,7 +401,7 @@ public class FChatActivity extends AppCompatActivity {
     }
 
     public void channelLeft(String channel){
-        updateChannelDrawer();
+        removeFragment(channel);
     }
 
     public void showFragment(int i){
@@ -379,6 +414,24 @@ public class FChatActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.content, f);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
+    }
+
+    private ChannelFragment getFragment(String label){
+        for(ChannelFragment f : fragments){
+            if(f.getChannelName().equals(label)){
+                return f;
+            }
+        }
+
+        return null;
+    }
+
+    private void removeFragment(String label){
+        ChannelFragment f = getFragment(label);
+        if(f != null){
+            fragments.remove(f);
+            updateChannelDrawer();
+        }
     }
 
     private void removeFragment(int index){

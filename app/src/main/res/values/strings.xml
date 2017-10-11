@@ -36,4 +36,9 @@
     <string name="fclient_disconnected">F-Chat Client Disconnected</string>
 
     <string name="fclient_service_label">F-Client Service</string>
+
+    <string-array name="send_options">
+        <item>Message</item>
+        <item>Roleplay Ad</item>
+    </string-array>
 </resources>

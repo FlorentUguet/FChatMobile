@@ -14,6 +14,7 @@ import java.util.Map;
 import fr.fusoft.fchatmobile.socketclient.controller.FClient;
 import fr.fusoft.fchatmobile.socketclient.model.commands.CHA;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ICH;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FAdEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 
@@ -69,6 +70,10 @@ public class FChannel implements Comparable {
 
     public FClient getClient(){return this.client;}
 
+    public void sendAd(String message){
+        this.client.sendAd(message, this.getName());
+    }
+
     public void sendMessage(String message){
         this.client.sendMessage(message, this.getName());
     }
@@ -92,6 +97,8 @@ public class FChannel implements Comparable {
     }
 
     public void setDescription(String description){this.description = description; }
+
+    public String getDescription(){ return this.description; }
 
     public FCharacter getCharacter(String name){
         if(this.characters.contains(name))
@@ -134,6 +141,10 @@ public class FChannel implements Comparable {
 
     public boolean hasCharacter(String name){
         return this.characters.contains(name);
+    }
+
+    public void addAd(FAdEntry ad){
+        addEntry(ad);
     }
 
     public void addMessage(FTextMessage message){

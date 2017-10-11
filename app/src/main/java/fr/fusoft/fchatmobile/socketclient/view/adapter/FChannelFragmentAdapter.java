@@ -14,9 +14,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import fr.fusoft.fchatmobile.R;
-import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
-import fr.fusoft.fchatmobile.socketclient.view.fragment.ChannelFragment;
-import fr.fusoft.fchatmobile.utils.network.DownloadImageTask;
+import fr.fusoft.fchatmobile.socketclient.view.fragment.channels.ChannelFragment;
 
 /**
  * Created by Florent on 06/09/2017.

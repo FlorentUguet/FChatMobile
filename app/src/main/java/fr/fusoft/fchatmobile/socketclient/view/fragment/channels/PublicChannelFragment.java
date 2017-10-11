@@ -1,5 +1,7 @@
-package fr.fusoft.fchatmobile.socketclient.view.fragment;
+package fr.fusoft.fchatmobile.socketclient.view.fragment.channels;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,7 +24,7 @@ import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListCompactAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListLargeAdapter;
-import fr.fusoft.fchatmobile.socketclient.view.adapter.FChatEntryAdapter;
+import fr.fusoft.fchatmobile.utils.BBCode;
 
 /**
  * Created by Florent on 07/09/2017.
@@ -59,6 +61,38 @@ public class PublicChannelFragment extends ChannelFragment {
             public void onClick(View view) {
                 sendMessage(messageInput.getText().toString());
                 messageInput.setText("");
+            }
+        });
+
+        this.buttonSend.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Send Method")
+                        .setSingleChoiceItems(R.array.send_options, 0, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                if(i == 0){
+                                    //Message
+                                    sendMessage(messageInput.getText().toString());
+                                    messageInput.setText("");
+                                }else{
+                                    //Roleplay Ad
+                                    sendAd(messageInput.getText().toString());
+                                    messageInput.setText("");
+                                }
+                                dialogInterface.dismiss();
+                            }
+                        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.create().show();
+
+                return true;
             }
         });
 
@@ -105,13 +139,19 @@ public class PublicChannelFragment extends ChannelFragment {
     }
 
     public void sendMessage(String message){
-
         if(this.channel != null){
             channel.sendMessage(message);
         }else{
-            Log.e(LOG_TAG, "Trying to send a n unloaded channel");
+            Log.e(LOG_TAG, "Trying to send a message to an unloaded channel");
         }
+    }
 
+    public void sendAd(String message){
+        if(this.channel != null){
+            channel.sendAd(message);
+        }else{
+            Log.e(LOG_TAG, "Trying to send an ad to an unloaded channel");
+        }
     }
 
     public void openUserProfile(FCharacter user){
@@ -244,4 +284,6 @@ public class PublicChannelFragment extends ChannelFragment {
         else
             return this.channelName;
     }
+
+    public String getChannelInfo(){ return BBCode.toHtml(this.channel.getDescription()); }
 }

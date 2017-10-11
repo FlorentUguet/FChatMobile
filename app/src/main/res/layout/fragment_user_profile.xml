@@ -45,47 +45,51 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/buttonClose"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
+        android:id="@+id/layoutButtons"
         android:layout_alignParentBottom="true"
-        android:text="@string/close"/>
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/buttonBookmark"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/buttonClose"
-        android:layout_toStartOf="@id/buttonClose"
-        android:layout_alignParentBottom="true"
-        android:text="@string/add_bookmark"/>
+        <Button
+            android:id="@+id/buttonDM"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/open_dm"/>
 
-    <Button
-        android:id="@+id/buttonFriend"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/buttonBookmark"
-        android:layout_toStartOf="@id/buttonBookmark"
-        android:layout_alignParentBottom="true"
-        android:text="@string/add_friend"/>
+        <Button
+            android:id="@+id/buttonFriend"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/add_friend"/>
 
-    <Button
-        android:id="@+id/buttonDM"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/buttonFriend"
-        android:layout_toStartOf="@id/buttonFriend"
-        android:layout_alignParentBottom="true"
-        android:text="@string/open_dm"/>
+        <Button
+            android:id="@+id/buttonBookmark"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/add_bookmark"/>
+
+        <Button
+            android:id="@+id/buttonClose"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/close"/>
+    </LinearLayout>
 
     <TabHost
         android:id="@+id/tabHost"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/buttonClose"
+        android:layout_above="@+id/layoutButtons"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/layoutAvatar">

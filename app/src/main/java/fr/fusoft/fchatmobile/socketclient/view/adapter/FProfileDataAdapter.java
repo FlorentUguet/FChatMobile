@@ -1,20 +1,16 @@
 package fr.fusoft.fchatmobile.socketclient.view.adapter;
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
 import fr.fusoft.fchatmobile.R;
-import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.ProfileData;
-import fr.fusoft.fchatmobile.utils.network.DownloadImageTask;
 
 /**
  * Created by Florent on 07/10/2017.

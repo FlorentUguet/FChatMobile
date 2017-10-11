@@ -1,4 +1,4 @@
-package fr.fusoft.fchatmobile.socketclient.view.fragment;
+package fr.fusoft.fchatmobile.socketclient.view.fragment.dialogs;
 
 import android.support.v4.app.DialogFragment;
 import android.os.Bundle;
@@ -21,7 +21,6 @@ import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
 import fr.fusoft.fchatmobile.socketclient.model.ProfileData;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.FProfileDataAdapter;
-import fr.fusoft.fchatmobile.utils.network.DownloadImageTask;
 
 /**
  * Created by Florent on 07/10/2017.
