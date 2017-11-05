@@ -42,7 +42,6 @@ import fr.fusoft.fchatmobile.socketclient.model.commands.TPN;
 import fr.fusoft.fchatmobile.socketclient.model.commands.VAR;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FAdEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
-import fr.fusoft.fchatmobile.socketclient.model.messages.FConnectionMessage;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FDebugMessage;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 
@@ -70,7 +69,7 @@ public class FClient {
     private FClientDebugListener mDebugListener;
 
     private FSocketManager socket;
-    private FCommandParser parser;
+    private FTokenHandler parser;
     private FListApi api;
 
     private FServer server;
@@ -138,11 +137,32 @@ public class FClient {
     }
 
     public void sendMessage(String message, String channel){
-        MSG command = new MSG(channel, message);
-        this.socket.sendCommand(command);
 
-        FTextMessage m = new FTextMessage(getCharacter(mainUser), command.getMessage());
-        getOpenChannel(command.getChannel()).addMessage(m);
+        if(message.startsWith("/")){
+            FCommand c = FCommandParser.parse(message, channel);
+
+            if(c == null){
+
+            }else{
+                this.socket.sendCommand(c);
+
+                switch(c.getToken()){
+                    case "MSG":
+                        getOpenChannel(channel).addMSG((MSG)c);
+                        break;
+                    case "LRP":
+                        getOpenChannel(channel).addLRP((LRP)c);
+                        break;
+                }
+            }
+
+        }else{
+            MSG command = new MSG(channel, message);
+            this.socket.sendCommand(command);
+            getOpenChannel(channel).addMSG(command);
+        }
+
+
     }
 
     public void requestKinks(String character){
@@ -354,7 +374,7 @@ public class FClient {
     }
 
     private void setupParser(){
-        this.parser = new FCommandParser(new FCommandParser.FCommandParserListener() {
+        this.parser = new FTokenHandler(new FTokenHandler.FTokenHandlerListener() {
             @Override
             public void onPing() {
                 socket.sendPing();

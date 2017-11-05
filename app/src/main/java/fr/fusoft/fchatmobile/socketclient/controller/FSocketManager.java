@@ -2,13 +2,11 @@ package fr.fusoft.fchatmobile.socketclient.controller;
 import android.content.Context;
 import android.util.Log;
 
-import com.neovisionaries.ws.client.ThreadType;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
 import com.neovisionaries.ws.client.WebSocketListener;
-import com.neovisionaries.ws.client.WebSocketState;
 
 import org.json.JSONObject;
 
@@ -36,10 +34,10 @@ public class FSocketManager {
     }
 
     private FSocketListener listener;
-    private FCommandParser parser;
+    private FTokenHandler parser;
     private Context context;
 
-    public FSocketManager(Context context, WebSocket socket, FCommandParser parser, FSocketListener listener)
+    public FSocketManager(Context context, WebSocket socket, FTokenHandler parser, FSocketListener listener)
     {
         this.context = context;
         this.socket = socket;
@@ -49,7 +47,7 @@ public class FSocketManager {
         setupSocketListener();
     }
 
-    public void setCommandParser(FCommandParser parser){
+    public void setCommandParser(FTokenHandler parser){
         this.parser = parser;
     }
 

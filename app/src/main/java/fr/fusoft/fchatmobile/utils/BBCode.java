@@ -17,9 +17,9 @@ public class BBCode {
         Map<String,String> bbMap = new HashMap<String , String>();
 
         bbMap.put("(\r\n|\r|\n|\n\r)", "<br/>");
-        bbMap.put("\\[b\\](.+?)\\[/b\\]", "<strong>$1</strong>");
-        bbMap.put("\\[i\\](.+?)\\[/i\\]", "<span style='font-style:italic;'>$1</span>");
-        bbMap.put("\\[u\\](.+?)\\[/u\\]", "<span style='text-decoration:underline;'>$1</span>");
+        bbMap.put("\\[b\\](.+?)\\[/b\\]", "<b>$1</b>");
+        bbMap.put("\\[i\\](.+?)\\[/i\\]", "<i>$1</i>");
+        bbMap.put("\\[u\\](.+?)\\[/u\\]", "<u>$1</u>");
         bbMap.put("\\[h1\\](.+?)\\[/h1\\]", "<h1>$1</h1>");
         bbMap.put("\\[h2\\](.+?)\\[/h2\\]", "<h2>$1</h2>");
         bbMap.put("\\[h3\\](.+?)\\[/h3\\]", "<h3>$1</h3>");

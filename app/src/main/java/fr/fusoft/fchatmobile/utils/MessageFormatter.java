@@ -25,14 +25,14 @@ public class MessageFormatter {
         String html = input;
 
         if(input.startsWith("/me")){
-            html = "<span style='font-style:italic;'>" + html.substring(3) + "</span>";
+            html = "<i>" + html.substring(3) + "<i>";
         }
 
         //Filters
         Map<String,String> filters = new HashMap<>();
 
-        filters.put("\\*\\*(.+?)\\*\\*", "<strong>$1</strong>");
-        filters.put("\\*(.+?)\\*", "<span style='font-style:italic;'>$1</span>");
+        filters.put("\\*\\*(.+?)\\*\\*", "<b>$1</b>");
+        filters.put("\\*(.+?)\\*", "<i'>$1<i>");
 
         for (Map.Entry entry: filters.entrySet()) {
             html = html.replaceAll(entry.getKey().toString(), entry.getValue().toString());

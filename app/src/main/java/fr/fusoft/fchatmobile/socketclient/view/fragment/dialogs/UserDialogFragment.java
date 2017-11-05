@@ -35,7 +35,6 @@ public class UserDialogFragment extends DialogFragment {
     private View root;
     private ImageView avatar;
     private TextView username;
-    private Button buttonClose;
     private Button buttonDM;
     private TextView description;
     private TextView status;
@@ -55,7 +54,8 @@ public class UserDialogFragment extends DialogFragment {
     }
 
     public interface UserProfileDialogListener{
-        void onClose();
+        void onBookmark(String character);
+        void onFriend(String character);
         void onDM(String character);
     }
 
@@ -73,7 +73,6 @@ public class UserDialogFragment extends DialogFragment {
         this.lvProfileData = (ListView) this.root.findViewById(R.id.lvProfileData);
         this.username = (TextView) this.root.findViewById(R.id.username);
         this.avatar = (ImageView) this.root.findViewById(R.id.avatar);
-        this.buttonClose = (Button) this.root.findViewById(R.id.buttonClose);
         this.buttonDM = (Button) this.root.findViewById(R.id.buttonDM);
         this.buttonFriend = (Button) this.root.findViewById(R.id.buttonFriend);
         this.buttonBookmark = (Button) this.root.findViewById(R.id.buttonBookmark);
@@ -112,14 +111,6 @@ public class UserDialogFragment extends DialogFragment {
         //Status
         this.status.setText(this.character.getStatusMessage());
 
-        //Listeners
-        buttonClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(mListener != null)
-                    mListener.onClose();
-            }
-        });
 
         buttonDM.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,14 +123,16 @@ public class UserDialogFragment extends DialogFragment {
         buttonBookmark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if(mListener != null)
+                    mListener.onBookmark(characterName);
             }
         });
 
         buttonFriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if(mListener != null)
+                    mListener.onFriend(characterName);
             }
         });
 

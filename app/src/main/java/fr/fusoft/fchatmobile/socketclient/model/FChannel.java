@@ -14,6 +14,8 @@ import java.util.Map;
 import fr.fusoft.fchatmobile.socketclient.controller.FClient;
 import fr.fusoft.fchatmobile.socketclient.model.commands.CHA;
 import fr.fusoft.fchatmobile.socketclient.model.commands.ICH;
+import fr.fusoft.fchatmobile.socketclient.model.commands.LRP;
+import fr.fusoft.fchatmobile.socketclient.model.commands.MSG;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FAdEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
@@ -39,6 +41,7 @@ public class FChannel implements Comparable {
         void onEntryListUpdated(List<FChatEntry> entries);
         void onMessageAdded(FTextMessage message);
         void onEntryAdded(FChatEntry message);
+        void onAdAdded(FAdEntry ad);
         void onUserListUpdated(List<FCharacter> users);
     }
 
@@ -145,6 +148,9 @@ public class FChannel implements Comparable {
 
     public void addAd(FAdEntry ad){
         addEntry(ad);
+
+        if(this.mListener != null)
+            this.mListener.onAdAdded(ad);
     }
 
     public void addMessage(FTextMessage message){
@@ -161,6 +167,16 @@ public class FChannel implements Comparable {
             this.mListener.onEntryAdded(entry);
             this.mListener.onEntryListUpdated(this.entries);
         }
+    }
+
+    public void addLRP(LRP ad){
+        FAdEntry e = new FAdEntry(client.getCharacter(ad.getCharacter()), ad.getMessage());
+        this.addAd(e);
+    }
+
+    public void addMSG(MSG message){
+        FTextMessage m = new FTextMessage(this.client.getMainUser(), message.getMessage());
+        this.addMessage(m);
     }
 
     public String getName(){

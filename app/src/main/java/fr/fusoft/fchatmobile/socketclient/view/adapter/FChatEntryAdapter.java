@@ -1,6 +1,7 @@
 package fr.fusoft.fchatmobile.socketclient.view.adapter;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import java.util.List;
 
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
+import fr.fusoft.fchatmobile.utils.BBCode;
 import fr.fusoft.fchatmobile.utils.MessageFormatter;
 
 /**
@@ -84,10 +86,10 @@ public class FChatEntryAdapter extends ArrayAdapter<FChatEntry> {
         lastPosition = position;
 
         String header = entry.getHeader();
-        String content = entry.getContent();
+        String content = MessageFormatter.format(entry.getContent());
 
         viewHolder.header.setText(header);
-        viewHolder.content.setText(content);
+        viewHolder.content.setText(Html.fromHtml(content));
         // Return the completed view to render on screen
         return convertView;
     }

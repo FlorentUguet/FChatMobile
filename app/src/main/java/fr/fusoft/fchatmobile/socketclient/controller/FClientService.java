@@ -52,7 +52,7 @@ public class FClientService extends Service {
         super.onCreate();
         Log.d(LOG_TAG,"Service Created");
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        createSocket(SERVER_URL);
+        createSocket(SERVER_URL_DEBUG);
         createClient();
 
         // Display a notification about us starting.  We put an icon in the status bar.

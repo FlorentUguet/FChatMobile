@@ -19,12 +19,14 @@ import fr.fusoft.fchatmobile.FChatMobileApplication;
 import fr.fusoft.fchatmobile.R;
 import fr.fusoft.fchatmobile.socketclient.model.FChannel;
 import fr.fusoft.fchatmobile.socketclient.model.FCharacter;
+import fr.fusoft.fchatmobile.socketclient.model.messages.FAdEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FChatEntry;
 import fr.fusoft.fchatmobile.socketclient.model.messages.FTextMessage;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListCompactAdapter;
 import fr.fusoft.fchatmobile.socketclient.view.adapter.characterlist.FCharacterListLargeAdapter;
 import fr.fusoft.fchatmobile.utils.BBCode;
+import fr.fusoft.fchatmobile.utils.MessageFormatter;
 
 /**
  * Created by Florent on 07/09/2017.
@@ -195,6 +197,11 @@ public class PublicChannelFragment extends ChannelFragment {
             }
 
             @Override
+            public void onAdAdded(FAdEntry entry){
+
+            }
+
+            @Override
             public void onMessageAdded(FTextMessage message) {
 
             }
@@ -285,5 +292,5 @@ public class PublicChannelFragment extends ChannelFragment {
             return this.channelName;
     }
 
-    public String getChannelInfo(){ return BBCode.toHtml(this.channel.getDescription()); }
+    public String getChannelInfo(){ return MessageFormatter.format(this.channel.getDescription()); }
 }

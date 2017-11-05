@@ -11,6 +11,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
@@ -294,10 +297,16 @@ public class FChatActivity extends AppCompatActivity {
         if(f != null){
             if(ChannelFragment.class.isInstance(f)){
                 ChannelFragment fragment = (ChannelFragment)f;
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
+                final TextView message = new TextView(this);
+                final SpannableString s = new SpannableString(Html.fromHtml(fragment.getChannelInfo()));
+                Linkify.addLinks(s, Linkify.WEB_URLS);
+                message.setText(s);
+                message.setMovementMethod(LinkMovementMethod.getInstance());
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(fragment.getChannelName())
-                        .setMessage(Html.fromHtml(fragment.getChannelInfo()))
+                        .setView(message)
                         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
